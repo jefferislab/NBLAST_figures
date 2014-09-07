@@ -1,0 +1,737 @@
+---
+title: "Auditory Interneurons"
+output: html_document
+---
+
+```{r startup, echo=FALSE,message=FALSE,warning=FALSE}
+source("../../R/StartUp.R", chdir=TRUE)
+opts_chunk$set(message=FALSE, fig.height=18.130/25.4, fig.width=30.217/25.4, dpi=300, dev='png', fig.path="figure/")
+knit_hooks$set(custom.plot = hook_rgl2) #Needed to embed plots
+par3dmini=c("FOV", "userMatrix", "scale", "zoom")
+nopen3d()
+```
+
+Analysis of Auditory Interneuron types
+===========================================
+
+Full coverage of auditory interneurons:
+
+* Start from Lai Neurons and search for more neurons of the following types:
+  * AMMC-AMMC PN (GadMARCM-F000248_seg002)
+  * AMMC-VLP PN (TPHMARCM-1068M_seg1)
+  * AMMC-B1 PN (DvGlutMARCM-F921_seg1)
+  * AMMC-IVLP PN1 (TPHMARCM-800F_seg1)
+  * AMMC-IVLP PN2 (DvGlutMARCM-F002279_seg001)
+  
+  
+  * Show that they have subtypes and topographic relationships
+* Also find similar neurons that do not have types in Lai et al. (2012)
+
+
+```{r}
+NeuronType<-function(gn) {
+  idids=fc_idid(gn)
+  annsubset=subset(annotation,annotation_class=='NeuronType')
+  annsubset[match(idids,annsubset$neuron_idid),'text']
+}
+
+opneuron=structure(list(FOV = 0, userMatrix = structure(c(1, 0, 0, 0, 
+0, -1, 0, 0, 0, 0, -1, 0, 0.406542079754558, 32.5233646071403, 
+0, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.288610458374023), .Names = c("FOV", 
+"userMatrix", "scale", "zoom"))
+opneuron2=structure(list(FOV = 0, userMatrix = structure(c(1, 0, 0, 0, 
+0, -1, 0, 0, 0, 0, -1, 0, 18.042286755896, 1.60157169087625, 
+0, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.368348151445389), .Names = c("FOV", 
+"userMatrix", "scale", "zoom"))
+```
+
+```{r remote-score-matrix}
+auditory_neurons_score_mat <- load_si_data("auditory_neurons_score_mat.rds")
+options(flycircuit.scoremat=auditory_neurons_score_mat)
+```
+
+AMMC-AMMC PN1 (GadMARCM-F000248_seg002)
+--------------------------
+
+Plot the AMMC-AMMC PN1 named by Lai et al. (2012)
+```{r Lai_AMMC-AMMC_PN1, cache=TRUE, custom.plot=TRUE}
+clear3d()
+plot3d(FCWB)
+par3d(opneuron)
+plot3d(FCWBNP.surf, materials=c("AMMC_L", "AMMC_R"), alpha=0.2)
+plot3d("GadMARCM-F000248_seg002", soma=T, lwd=2)
+```
+
+Find all annotated AMMC-AMMC PN1, nblast and collect high scorers.
+
+```{r find_AMMC-AMMC_PN1, cache=TRUE, custom.plot=TRUE}
+clear3d()
+sc=fc_nblast(subset(dps,NeuronType(gene_name)=='AMMC-AMMC PN1',rval='names'),normalisation='mean')
+# highish threshold of 0.5 but only has to be against 1
+ammcammccands=names(which(apply(sc,1,function(x) sum(x>0.5))>0))
+length(ammcammccands)
+op=structure(list(FOV = 0, userMatrix = structure(c(1, 0, 0, 0, 
+0, -1, 0, 0, 0, 0, -1, 0, 2.21588273462725, 1.32316382712298, 
+0, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.629999995231628), .Names = c("FOV", 
+"userMatrix", "scale", "zoom"))
+par3d(op)
+plot3d(ammcammccands, soma=T)
+#Checked by dpscan. All similar to AMMC-AMMC PN1
+ammcammcdef=ammcammccands
+```
+
+Cluster and divided into 2 groups
+```{r HC_AMMC-AMMCPN1, cache=TRUE, fig.width=70/25.4, fig.height=40/25.4}
+ammcammcdefhc=hclustfc(ammcammcdef)
+ammcammcdefhc$height=sqrt(ammcammcdefhc$height)
+ammcammcdefhcc=color_clusters(ammcammcdefhc, k=2, groupLabels=as.roman)
+labels(ammcammcdefhcc)=NULL
+par(mar=c(1,2,0,0))
+plot(ammcammcdefhcc)
+abline(h=height_for_ngroups(ammcammcdefhc, k=2), lty='dashed')
+```
+
+There are `r length(ammcammcdef)`. 
+
+All very similar but with some differences in the dorsal/ventral and anterior/posterior level they innervate.
+
+Group 1 extends more dorsally and is anterior to group 2.
+
+```{r AMMC-AMMCPN1_g1-2, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(op)
+plot3d(ammcammcdefhc, k=2, soma=T)
+```
+
+View with only 1 neuron of each group and the Lai type:
+
+```{r AMMC-AMMCPN1_g1-2.disp, custom.plot=TRUE, cache=TRUE}
+ammcammcpn1_g1=subset(ammcammcdefhc, k=2, groups=1)[10]
+ammcammcpn1_g2=subset(ammcammcdefhc, k=2, groups=2)[4]
+clear3d()
+par3d(op)
+plot3d("GadMARCM-F000248_seg002", soma=T, lwd=2, col='black')
+plot3d(ammcammcpn1_g1, soma=T, lwd=2, col='red')
+plot3d(ammcammcpn1_g2, soma=T, lwd=2, col='cyan')
+```
+
+Plot them separately.
+
+All neurons group 1.
+```{r AMMC-AMMCPN1_g1, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(op)
+plot3d(ammcammcdefhc, k=2, groups=1, soma=T)
+```
+
+All neurons  group 2.
+```{r AMMC-AMMCPN1_g2, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(op)
+plot3d(ammcammcdefhc, k=2, groups=2, soma=T)
+```
+
+AMMC-VLP PN (TPHMARCM-1068M_seg1)
+-------------------------
+
+Plot the AMMC-VLP PN named by Lai et al. (2012).
+```{r Lai_AMMC-VLP_PN, cache=TRUE, custom.plot=TRUE}
+clear3d()
+plot3d(FCWB)
+par3d(opneuron2)
+plot3d(FCWBNP.surf, materials=c("AMMC_L", "PVLP_R"), alpha=0.2)
+plot3d("TPHMARCM-1068M_seg1", soma=T, lwd=2)
+```
+
+Find all annotated AMMC-VLP PN, nblast and collect high scorers.
+
+```{r find_AMMC-VLP_PN, cache=TRUE, custom.plot=TRUE}
+clear3d()
+sc=fc_nblast(subset(dps,NeuronType(gene_name)=='AMMC-VLP PN',rval='names'),normalisation='mean')
+# highish threshold of 0.5 but only has to be against 1
+ammcvlpcands=names(which(apply(sc,1,function(x) sum(x>0.5))>0))
+length(ammcvlpcands)
+op=structure(list(FOV = 0, userMatrix = structure(c(1, 0, 0, 0, 
+0, -1, 0, 0, 0, 0, -1, 0, 2.21588273462725, 1.32316382712298, 
+0, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.694574952125549), .Names = c("FOV", 
+"userMatrix", "scale", "zoom"))
+par3d(op)
+plot3d(ammcvlpcands, soma=T)
+```
+
+Plot a few of these AMMC-VLP PN hits plus the query.
+```{r AMMC-VLP_PN_hits, cache=TRUE, custom.plot=TRUE}
+clear3d()
+par3d(op)
+plot3d("TPHMARCM-1068M_seg1", soma=T, lwd=2, col='black')
+plot3d(ammcvlpcands[1:5], soma=T)
+```
+
+Check all neurons and remove the ones that are different.
+
+Only one neuron that was significantly different was removed (reallynotammcvlp).
+
+```{r select_AMMC-VLP_PN, cache=TRUE}
+#checked by dpscan
+#sel=dpscan(ammcvlpcands, soma=T)
+reallynotammcvlp="ChaMARCM-F001257_seg001"
+ammcvlpdef=setdiff(ammcvlpcands,reallynotammcvlp)
+```
+
+These selected ones are neurons that are similar to AMMC-VLP but have innervation that extends more ventrally, either ipsi- or contralaterally.
+
+Cluster all AMMC-VLP PNs found. 
+
+```{r HC_AMMC-VLP_PN, cache=TRUE, fig.width=70/25.4, fig.height=40/25.4}
+ammcvlpdefhc=hclustfc(ammcvlpdef)
+ammcvlpdefhc$height=sqrt(ammcvlpdefhc$height)
+ammcvlpdefhcc=color_clusters(ammcvlpdefhc, h=1.2, groupLabels=as.roman)
+labels(ammcvlpdefhcc)=NULL
+par(mar=c(0,2,0,0))
+plot(ammcvlpdefhcc)
+abline(h=1.2, lty='dashed')
+```
+
+There are `r length(ammcvlpdef)`.
+
+Divided into 2 groups:
+```{r AMMC-VLPPN_g1_2, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(op)
+plot3d(ammcvlpdefhc, h=1.2, soma=T)
+```
+
+All very similar but with differences in the length and position of the ipsi- and contralateral arborisations.
+
+Group I doesn't extend as laterally in the contralateral hemisphere, or as ventrally in the ipsilateral side as group II.
+
+Group 1:
+```{r AMMC-VLPPN_g1, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(op)
+plot3d(ammcvlpdefhc, h=1.2, groups=1, soma=T)
+```
+
+Goup 2:
+```{r AMMC-VLPPN_g2, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(op)
+plot3d(ammcvlpdefhc, h=1.2, groups=2, soma=T)
+```
+
+Plot one neuron of each group together with the query
+```{r newAMMC-VLP_PN, cache=TRUE, custom.plot=TRUE}
+clear3d()
+par3d(op)
+plot3d(subset(ammcvlpdefhc, h=1.2, groups=1)[10], col='red', soma=T, lwd=2)
+plot3d(subset(ammcvlpdefhc, h=1.2, groups=2)[10], col='cyan', soma=T, lwd=2)
+plot3d("TPHMARCM-1068M_seg1", soma=T, lwd=2, col='black')
+```
+
+AMMC-B1 (DvGlutMARCM-F921_seg1)
+-----------------------------
+
+Find everything that matches their types by using Marta's entries annotation db
+
+Plot the AMMC-B1 PN named by Lai et al. (2012).
+```{r Lai_AMMC-B1PN, cache=TRUE, custom.plot=TRUE}
+plot3d(FCWB)
+par3d(opneuron)
+plot3d(FCWBNP.surf, materials=c("AMMC_L", "IVLP_R", "IVLP_L"), alpha=0.2)
+plot3d("DvGlutMARCM-F921_seg1", soma=T, lwd=2)
+```
+
+Then make sure that nothing was missing by reblasting those.
+
+```{r find_AMMC-B1PN, cache=TRUE, custom.plot=TRUE}
+clear3d()
+sc=fc_nblast(subset(dps,NeuronType(gene_name)=='AMMC-B1 PN',rval='names'), normalisation = "mean")
+# highish threshold of 0.5 but only has to be against 1
+b1cands=names(which(apply(sc,1,function(x) sum(x>0.5))>0))
+length(b1cands)
+op=structure(list(FOV = 0, userMatrix = structure(c(0.973064422607422, 
+0.0112787373363972, 0.230257630348206, 0, 0.128527104854584, 
+-0.855711102485657, -0.501237750053406, 0, 0.191380634903908, 
+0.517330944538116, -0.834111630916595, 0, 0.425977855920792, 
+-3.49406599998474, 3.26489591598511, 1), .Dim = c(4L, 4L)), scale = c(1, 
+1, 1), zoom = 0.547308325767517), .Names = c("FOV", "userMatrix", 
+"scale", "zoom"))
+par3d(op)
+plot3d(b1cands)
+```
+
+Plot the query and 5 hits.
+```{r AMMC-B1PN_hits, cache=TRUE, custom.plot=TRUE}
+clear3d()
+par3d(op)
+plot3d("DvGlutMARCM-F921_seg1", soma=T, lwd=2)
+plot3d(b1cands[seq(from=1, to=204,length.out=5)])
+```
+
+Then cluster and divide into 2 groups.
+
+```{r divide_AMMC-B1PN, cache=TRUE, fig.width=70/25.4, fig.height=40/25.4}
+b1candshc=hclustfc(b1cands)
+b1candshc$height=sqrt(b1candshc$height)
+b1candshcc=colour_clusters(b1candshc, k=2, groupLabels=as.roman)
+labels(b1candshcc)=NULL
+par(mar=c(0,2,0,0))
+plot(b1candshcc)
+abline(h=height_for_ngroups(b1candshc, k=2), lty='dashed')
+```
+
+Group 1 are unidentified neurons that innervate the AMMC. They innervate only the ipsilateral AMMC, with a dorsal cell body and cell body neurite.
+
+```{r all_AMMC-B1PN_g1, custom.plot=TRUE, cache=TRUE}
+clear3d()
+op2=structure(list(FOV = 0, userMatrix = structure(c(0.973064422607422, 
+0.0112787373363972, 0.230257630348206, 0, 0.128527104854584, 
+-0.855711102485657, -0.501237750053406, 0, 0.191380634903908, 
+0.517330944538116, -0.834111630916595, 0, -0.0331744264336122, 
+15.906547068579, 3.26489591598514, 1), .Dim = c(4L, 4L)), scale = c(1, 
+1, 1), zoom = 0.633577704429626), .Names = c("FOV", "userMatrix", 
+"scale", "zoom"))
+par3d(op2)
+plot3d(b1candshc, k=2, soma=T, groups=1)
+```
+
+Remove outliers (LN without long cell body neurite). Cluster and divide this new type:
+
+```{r HC_newdorsalAMMC, cache=TRUE, fig.width=70/25.4, fig.height=40/25.4}
+outlier=c("DvGlutMARCM-F924_seg1", "DvGlutMARCM-F924_seg1", "DvGlutMARCM-F357_seg1")
+dorsalammc=subset(b1candshc, k=2, groups=1)
+dorsalammc=setdiff(dorsalammc, outlier)
+dorsalammchc=hclustfc(dorsalammc)
+dorsalammchc$height=sqrt(dorsalammchc$height)
+dorsalammchcc=color_clusters(dorsalammchc, k=2, groupLabels=as.roman)
+labels(dorsalammchcc)=NULL
+par(mar=c(2,2,0,0))
+plot(dorsalammchcc)
+```
+
+Group 1 (in magenta) have a shorter cell body neurite and innervate a more dorsal region in the AMMC.
+
+These 2 groups might represent 2 subtypes of new AMMC local neurons.
+```{r newdorsalAMMC_g1-2, cache=TRUE, custom.plot=TRUE}
+clear3d()
+par3d(op2)
+plot3d(subset(dorsalammchc, k=2, groups=1), soma=T, col='magenta')
+plot3d(subset(dorsalammchc, k=2, groups=2), soma=T, col='orange')
+```
+
+The other group seems to correspond to subtypes of AMMC-B1, with differences in innervation position.
+```{r all_AMMC-B1PN_g2, custom.plot=TRUE, cache=TRUE}
+clear3d()
+op3=structure(list(FOV = 0, userMatrix = structure(c(1, 0, 0, 0, 
+0, -1, 0, 0, 0, 0, -1, 0, 1.32729801578773, -27.6398917086424, 
+0, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.661500036716461), .Names = c("FOV", 
+"userMatrix", "scale", "zoom"))
+par3d(op3)
+plot3d(b1candshc, k=2, soma=T, groups=2)
+```
+
+Check them all by dpscan, to make sure they have the ipsilateral branch that innervates the IVLP (i.e. are not AMMC-IVLP PN1)
+```{r removing_non_AMMC-B1PN, cache=TRUE}
+b1poss=subset(b1candshc, k=2, groups=2)
+#sel=dpscan(b1poss, soma=T)
+nonb1=c("TPHMARCM-1111M_seg1", "TPHMARCM-274F_seg1", 
+"TPHMARCM-1048M_seg1", "DvGlutMARCM-F1824_seg1", "TPHMARCM-M001650_seg001", 
+"TPHMARCM-717F_seg1", "TPHMARCM-1018M_seg1", "TPHMARCM-M001540_seg001", 
+"TPHMARCM-1050M_seg1", "TPHMARCM-M001538_seg001", "TPHMARCM-545M_seg1", 
+"TPHMARCM-M001578_seg001", "TPHMARCM-1044M_seg1", "TPHMARCM-M001611_seg001", 
+"TPHMARCM-606M_seg1", "TPHMARCM-1106M_seg1", "DvGlutMARCM-F1498_seg1", 
+"TPHMARCM-614F_seg1", "GadMARCM-F000648_seg001", "TPHMARCM-737F_seg1", 
+"DvGlutMARCM-F1651_seg1", "TPHMARCM-M001694_seg001",
+"TPHMARCM-742F_seg1", "FruMARCM-F000670_seg001", 
+"TPHMARCM-105M_seg1", "TPHMARCM-1206F_seg1", "DvGlutMARCM-F1538_seg1", 
+"TPHMARCM-1316M_seg1", "TPHMARCM-804M_seg1", "TPHMARCM-880F_seg1", 
+"TPHMARCM-1239F_seg1", "TPHMARCM-533M_seg1", "TPHMARCM-709F_seg1", 
+"TPHMARCM-560M_seg1", "TPHMARCM-M001633_seg002", "TPHMARCM-1275F_seg1", 
+"TPHMARCM-1234F_seg1", "TPHMARCM-780F_seg1", "TPHMARCM-1197F_seg1", 
+"TPHMARCM-1229F_seg1", "TPHMARCM-M001521_seg001", "TPHMARCM-746F_seg1", 
+"TPHMARCM-763F_seg1", "TPHMARCM-M001357_seg001", "TPHMARCM-M001364_seg001", 
+"TPHMARCM-1252F_seg1", "TPHMARCM-594F_seg1", "FruMARCM-M001096_seg003", 
+"TPHMARCM-654F_seg1", "TPHMARCM-1213F_seg1", "TPHMARCM-660M_seg2", 
+"FruMARCM-M002287_seg001", "FruMARCM-F000272_seg001", "TPHMARCM-691F_seg1", 
+"TPHMARCM-722F_seg1", "TPHMARCM-1274F_seg1", "TPHMARCM-1195F_seg1", 
+"TPHMARCM-800F_seg1", "DvGlutMARCM-F003336_seg001", "DvGlutMARCM-F003157_seg001", 
+"TPHMARCM-1012M_seg1", "FruMARCM-F001027_seg002", "TPHMARCM-440F_seg1", 
+"TPHMARCM-M001551_seg003", "TPHMARCM-783F_seg1", "TPHMARCM-773M_seg1", 
+"TPHMARCM-102M_seg1", "TPHMARCM-456M_seg1", "TPHMARCM-183M_seg1", 
+"TPHMARCM-209F_seg1", "FruMARCM-M001361_seg001", "TPHMARCM-863M_seg1", 
+"TPHMARCM-191M_seg1", "TPHMARCM-1178F_seg1", "TPHMARCM-1283F_seg1", 
+"TPHMARCM-1271F_seg1", "TPHMARCM-579F_seg1", "FruMARCM-M001888_seg001", "TPHMARCM-1080M_seg1", "DvGlutMARCM-F002386_seg002", "ChaMARCM-F000565_seg001", "FruMARCM-F001485_seg001")
+outliers=c("TPHMARCM-716F_seg1", "DvGlutMARCM-F003125_seg002")
+```
+
+Define the group of strict AMMC-B1 PN neurons.
+
+Cluster and divided at h=1.5, 3 groups:
+
+```{r HC_AMMC-B1PN, cache=TRUE, fig.width=70/25.4, fig.height=40/25.4}
+b1def=setdiff(b1poss, nonb1)
+b1def=setdiff(b1def, outliers)
+b1defhc=hclustfc(b1def)
+b1defhc$height=sqrt(b1defhc$height)
+b1defhcc=color_clusters(b1defhc, h=1.5, groupLabels=as.roman)
+labels(b1defhcc)=NULL
+par(mar=c(1,2,0,0))
+plot(b1defhcc)
+```
+
+There are `r length(b1def)`.
+
+Group 1 innervates the more medial regions of the ipsilateral AMMC and contralateral IVLP, and more posterior in the medial ipsilateral AMMC.
+
+Group 2 includes only a few neurons that have very extensive arborisation in the dorso-lateral ipsilateral AMMC and IVLP. In the contralateral IVLP it terminates the most medially.
+
+Group 3 innervates the lateral ventral AMMC, anterior to group 1. Similar to group 2 in the contralateral IVLP, but it extends more laterally.
+```{r AMMC-B1PN_g1to3, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(op3)
+plot3d(subset(b1defhc, h=1.5, groups=1), soma=T, col='blue')
+plot3d(subset(b1defhc, h=1.5, groups=2), soma=T, col='green')
+plot3d(subset(b1defhc, h=1.5, groups=3), soma=T, col='purple')
+```
+
+Posterior view:
+```{r AMMC-B1PN_g1to3.post, custom.plot=TRUE, cache=TRUE}
+clear3d()
+oppost=structure(list(FOV = 0, userMatrix = structure(c(-1, 0, 0, 0, 
+0, -1, 0, 0, 0, 0, 1, 0, 0.606009286218807, -21.8163345832301, 
+0, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.661499977111816), .Names = c("FOV", 
+"userMatrix", "scale", "zoom"))
+par3d(oppost)
+plot3d(subset(b1defhc, h=1.5, groups=1), soma=T, col='blue')
+plot3d(subset(b1defhc, h=1.5, groups=2), soma=T, col='green')
+plot3d(subset(b1defhc, h=1.5, groups=3), soma=T, col='purple')
+```
+
+Lateral view:
+```{r AMMC-B1PN_g1to3.lat, custom.plot=TRUE, cache=TRUE}
+clear3d()
+oplat=structure(list(FOV = 0, userMatrix = structure(c(0.0749542713165283, 
+0.118490919470787, 0.990122079849243, 0, 0.160686954855919, -0.981374442577362, 
+0.105279736220837, 0, 0.984155118465424, 0.151208534836769, -0.092598170042038, 
+0, -0.0465252995491028, 1.56108117103577, 2.054692029953, 1), .Dim = c(4L, 
+4L)), scale = c(1, 1, 1), zoom = 0.694574952125549), .Names = c("FOV", 
+"userMatrix", "scale", "zoom"))
+par3d(oplat)
+plot3d(subset(b1defhc, h=1.5, groups=1), soma=T, col='blue')
+plot3d(subset(b1defhc, h=1.5, groups=2), soma=T, col='green')
+plot3d(subset(b1defhc, h=1.5, groups=3), soma=T, col='purple')
+```
+
+Plot a frontal view with one hit from each group plus the query.
+```{r AMMC-B1PN_g1to3.query, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(op3)
+plot3d(subset(b1defhc, h=1.5, groups=1)[12], soma=T, col='blue', lwd=2)
+plot3d(subset(b1defhc, h=1.5, groups=2)[4], soma=T, col='green', lwd=2)
+plot3d(subset(b1defhc, h=1.5, groups=3)[20], soma=T, col='purple', lwd=2)
+plot3d("DvGlutMARCM-F921_seg1", soma=T, lwd=2)
+```
+
+AMMC-IVLP PN1 (TPHMARCM-800F_seg1)
+------------------------------------
+
+Plot the AMMC-IVLP PN1 named by Lai et al. (2012).
+```{r Lai_AMMC-IVLP_PN1, cache=TRUE, custom.plot=TRUE}
+clear3d()
+plot3d(FCWB)
+par3d(opneuron)
+plot3d(FCWBNP.surf, materials=c("AMMC_L", "IVLP_R"), alpha=0.2)
+plot3d("TPHMARCM-800F_seg1", soma=T, lwd=2)
+```
+
+Find all annotated AMMC-IVLP PN1, nblast and collect high scorers.
+
+```{r find_AMMC-IVLP_PN1, cache=TRUE, custom.plot=TRUE}
+clear3d()
+sc=fc_nblast(subset(dps,NeuronType(gene_name)=='AMMC-IVLP PN1',rval='names'),normalisation='mean')
+# highish threshold of 0.5 but only has to be against 1
+ammcivlppn1cands=names(which(apply(sc,1,function(x) sum(x>0.5))>0))
+length(ammcivlppn1cands)
+par3d(op)
+plot3d(ammcivlppn1cands, soma=T)
+```
+
+Checked all neurons by dpscan to remove the AMMC-B1 neurons that have the ipsilateral branch to the IVLP, and other outliers.
+
+```{r select_AMMC-IVLP_PN1, cache=TRUE, custom.plot=TRUE}
+#checked by dpscan
+#sel=dpscan(ammcivlppn1cands, soma=T)
+#dput(sel)
+sel=c("FruMARCM-M002270_seg001", "FruMARCM-M002386_seg001", "FruMARCM-M002488_seg001", 
+"FruMARCM-M002493_seg001", "FruMARCM-M002510_seg003", "FruMARCM-M002586_seg001", 
+"FruMARCM-M001577_seg001", "FruMARCM-M001591_seg001", "FruMARCM-M001649_seg001", 
+"FruMARCM-M001784_seg001", "FruMARCM-M001799_seg001", "FruMARCM-M001849_seg001", 
+"FruMARCM-M001906_seg001", "FruMARCM-M001959_seg001", "FruMARCM-M002018_seg001", 
+"FruMARCM-M002108_seg001", "FruMARCM-M001206_seg001", "FruMARCM-M001248_seg001", 
+"FruMARCM-M001362_seg001", "FruMARCM-M001389_seg001", "FruMARCM-M001463_seg001", 
+"FruMARCM-M001049_seg001", "FruMARCM-M001066_seg001", "FruMARCM-M001069_seg001", 
+"FruMARCM-M000695_seg001", "TPHMARCM-M001804_seg001", "TPHMARCM-M001550_seg001", 
+"TPHMARCM-M001563_seg001", "TPHMARCM-M001632_seg001", "TPHMARCM-M001654_seg001", 
+"FruMARCM-M000136_seg001", "TPHMARCM-M001541_seg001", "TPHMARCM-M001359_seg001", 
+"TPHMARCM-M001426_seg002", "TPHMARCM-1067M_seg1", "TPHMARCM-1080M_seg1", 
+"TPHMARCM-1082M_seg2", "TPHMARCM-918M_seg1", "TPHMARCM-925M_seg1", 
+"TPHMARCM-931M_seg1", "TPHMARCM-970M_seg1", "TPHMARCM-502M_seg1", 
+"TPHMARCM-080M_seg1", "TPHMARCM-091M_seg1", "TPHMARCM-103M_seg1", 
+"TPHMARCM-367M_seg1", "TPHMARCM-444M_seg1", "TPHMARCM-454M_seg1", 
+"TPHMARCM-485M_seg1", "TPHMARCM-550M_seg1", "TPHMARCM-663M_seg1", 
+"FruMARCM-F002192_seg001", "FruMARCM-F002653_seg001", "FruMARCM-F001741_seg001", 
+"ChaMARCM-F001047_seg001", "ChaMARCM-F000712_seg001", "FruMARCM-F001124_seg001", 
+"FruMARCM-F001308_seg001", "FruMARCM-F001426_seg001", "FruMARCM-F001430_seg001", 
+"DvGlutMARCM-F003940_seg001", "DvGlutMARCM-F004018_seg001", "DvGlutMARCM-F004022_seg002", 
+"FruMARCM-F000913_seg001", "FruMARCM-F000955_seg001", "FruMARCM-F000964_seg001", 
+"FruMARCM-F000967_seg001", "ChaMARCM-F000452_seg001", "ChaMARCM-F000486_seg002", 
+"FruMARCM-F000714_seg001", "ChaMARCM-F000327_seg001", "DvGlutMARCM-F003612_seg001", 
+"GadMARCM-F000395_seg001", "GadMARCM-F000474_seg001", "DvGlutMARCM-F002386_seg002", 
+"TPHMARCM-1214F_seg1", "TPHMARCM-1228F_seg1", "TPHMARCM-1272F_seg1", 
+"TPHMARCM-1334F_seg1", "TPHMARCM-753F_seg2", "TPHMARCM-781F_seg1", 
+"TPHMARCM-054F_seg1", "TPHMARCM-127F_seg1", "TPHMARCM-150F_seg1", 
+"TPHMARCM-199F_seg1", "TPHMARCM-219F_seg1", "TPHMARCM-243F_seg1", 
+"TPHMARCM-580F_seg1", "TPHMARCM-634F-01_seg1", "TPHMARCM-649F_seg2", 
+"TPHMARCM-686F_seg1", "TPHMARCM-694F_seg2", "TPHMARCM-838F_seg1", 
+"DvGlutMARCM-F921_seg1", "DvGlutMARCM-F1540_seg1", "DvGlutMARCM-F675-X2_seg1", 
+"DvGlutMARCM-F489_seg1", "FruMARCM-M001800_seg001")
+ammcivlppn1def=setdiff(ammcivlppn1cands, sel)
+length(ammcivlppn1def)
+clear3d()
+par3d(op)
+plot3d(ammcivlppn1def, soma=T)
+```
+
+There are `r length(ammcivlppn1def)`.
+
+Cluster and divide into groups.
+```{r HC_AMMC-IVLP_PN1, cache=TRUE, fig.width=70/25.4, fig.height=50/25.4}
+ammcivlppn1defhc=hclustfc(ammcivlppn1def)
+ammcivlppn1defhc$height=sqrt(ammcivlppn1defhc$height)
+ammcivlppn1defhcc=color_clusters(ammcivlppn1defhc, k=3, groupLabels=as.roman)
+labels(ammcivlppn1defhcc)=NULL
+par(mar=c(1,2,0,0))
+plot(ammcivlppn1defhcc)
+abline(h=height_for_ngroups(ammcivlppn1defhc, k=3), lty='dashed')
+```
+
+Divide into 3 groups.
+
+```{r AMMC-IVLP_PN1_g1to3, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(op)
+plot3d(ammcivlppn1defhc, k=3, soma=T)
+```
+
+Posterior view:
+```{r AMMC-IVLP_PN1_g1to3.post, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(oppost)
+plot3d(ammcivlppn1defhc, k=3, soma=T)
+```
+
+Lateral view
+```{r AMMC-IVLP_PN1_g1to3.lat, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(oplat)
+plot3d(ammcivlppn1defhc, k=3, soma=T)
+```
+
+Plot a one of each group plus the query.
+```{r AMMC-IVLP_PN1_hits, cache=TRUE, custom.plot=TRUE}
+clear3d()
+par3d(op)
+plot3d(subset(ammcivlppn1defhc, k=3, groups=1)[10], col='red', soma=T, lwd=2)
+plot3d(subset(ammcivlppn1defhc, k=3, groups=2)[10], col='green', soma=T, lwd=2)
+plot3d(subset(ammcivlppn1defhc, k=3, groups=3)[10], col='blue', soma=T, lwd=2)
+plot3d("TPHMARCM-800F_seg1", soma=T, lwd=2)
+```
+
+Group I: 
+
+Extends a neurite ventrally, ipsilaterally. Terminates more medially in the contralateral side, have some short dorsal branches in the contralateral side before reaching the most lateral point. 
+```{r AMMC-IVLP_PN1_g1, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(op)
+plot3d(ammcivlppn1defhc, k=3, soma=T, groups=1)
+```
+
+Posterior view
+```{r AMMC-IVLP_PN1_g1.post, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(oppost)
+plot3d(ammcivlppn1defhc, k=3, soma=T, groups=1)
+```
+
+Group 2 has the most extensive arborisation, both ipsi- and contralaterally. It extends the most medially. Ipsilaterally, it is anterior to group 3 in the ventral region.
+
+```{r AMMC-IVLP_PN1_g2, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(op)
+plot3d(ammcivlppn1defhc, k=3, soma=T, groups=2)
+```
+
+Posterior view
+```{r AMMC-IVLP_PN1_g2.post, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(oppost)
+plot3d(ammcivlppn1defhc, k=3, soma=T, groups=2)
+```
+
+Some neurons in group 3 extend a ventral neurite in the ipsilateral side. Similar to group 2 otherwise.
+```{r AMMC-IVLP_PN1_g3, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(op)
+plot3d(ammcivlppn1defhc, k=3, soma=T, groups=3)
+```
+
+Posterior view
+```{r AMMC-IVLP_PN1_g3.post, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(oppost)
+plot3d(ammcivlppn1defhc, k=3, soma=T, groups=3)
+```
+
+AMMC-IVLP PN2 (DvGlutMARCM-F002279_seg001)
+------------------------------
+
+Plot the AMMC-IVLP PN2 named by Lai et al. (2012).
+
+It is represented in the Lai et al. (2012) figure as having a short dorsal branch in the contralateral hemisphere.
+```{r Lai_AMMC-IVLP_PN2, cache=TRUE, custom.plot=TRUE}
+clear3d()
+plot3d(FCWB)
+par3d(opneuron)
+plot3d(FCWBNP.surf, materials=c("AMMC_L", "IVLP_R"), alpha=0.2)
+plot3d("DvGlutMARCM-F002279_seg001", soma=T, lwd=2)
+```
+
+Find all AMMC-IVLP PN2, nblast and collect high scorers.
+```{r find_AMMC-IVLP_PN2, cache=TRUE, custom.plot=TRUE}
+clear3d()
+sc=fc_nblast(subset(dps,NeuronType(gene_name)=='AMMC-IVLP PN2',rval='names'),normalisation='mean')
+# highish threshold of 0.5,but only has to be against 1
+ammcivlppn2cands=names(which(apply(sc,1,function(x) sum(x>0.5))>0))
+length(ammcivlppn2cands)
+par3d(oppost)
+plot3d(ammcivlppn2cands, soma=T)
+```
+
+There's heterogeneity in the results. One group corresponds to the strict Lai type (short dorsal branch), many others don't have this branch, or have a long lateral one.
+
+For now, I will select the neurons that follow the strict Lai type. Later on, I'll analyse the other types.
+```{r selecting_AMMC-IVLP_PN2, cache=TRUE, custom.plot=TRUE}
+clear3d()
+#sel=dpscan(ammcivlppn2cands, soma=T)
+ammcivlppn2def=c("ChaMARCM-F001061_seg001", "ChaMARCM-F000680_seg001", "DvGlutMARCM-F004222_seg002", 
+"DvGlutMARCM-F004258_seg001", "DvGlutMARCM-F004260_seg001", "DvGlutMARCM-F004261_seg001", 
+"DvGlutMARCM-F004296_seg001", "DvGlutMARCM-F003953_seg001", "DvGlutMARCM-F003964_seg001", 
+"DvGlutMARCM-F004182_seg001", "DvGlutMARCM-F003096_seg002", "DvGlutMARCM-F002346_seg001", 
+"DvGlutMARCM-F002349_seg001", "DvGlutMARCM-F1041_seg1", "DvGlutMARCM-F1042_seg1", 
+"DvGlutMARCM-F919_seg1", "DvGlutMARCM-F1429_seg1", "DvGlutMARCM-F534_seg1"
+)
+#removed 2 neurons that were quite different
+outlier=c("ChaMARCM-F001147_seg001", "DvGlutMARCM-F002952_seg002")
+ammcivlppn2cands=setdiff(ammcivlppn2cands, outlier)
+notammcivlppn2=setdiff(ammcivlppn2cands, ammcivlppn2def)
+par3d(oppost)
+plot3d(ammcivlppn2def, soma=T)
+```
+
+There are `r length(ammcivlppn2def)` neurons that follow the strict description of Lai.
+
+There are `r length(ammcivlppn2cands)` that look like subtypes of AMMC-IVLP PN2.
+
+Plot a few of the AMMC-IVLP PN2 candidates hits plus the query.
+```{r AMMC-IVLP_PN2_hits, cache=TRUE, custom.plot=TRUE}
+clear3d()
+par3d(op)
+plot3d("DvGlutMARCM-F002279_seg001", soma=T, lwd=2)
+plot3d(ammcivlppn2cands[seq(from=11, to=length(ammcivlppn2cands), by=30)], soma=T)
+```
+
+Cluster all AMMC-IVLP PN2 candidates.
+```{r HC_AMMC-IVLP_PN2, cache=TRUE, fig.width=70/25.4, fig.height=40/25.4}
+ammcivlppn2candshc=hclustfc(ammcivlppn2cands)
+ammcivlppn2candshc$height=sqrt(ammcivlppn2candshc$height)
+ammcivlppn2candshcc=color_clusters(ammcivlppn2candshc, k=6, groupLabels=as.roman)
+labels(ammcivlppn2candshcc)=NULL
+par(mar=c(1,2,0,0))
+plot(ammcivlppn2candshcc)
+abline(h=height_for_ngroups(ammcivlppn2candshc, k=6), lty='dashed')
+```
+
+Groups 1 to 2.
+
+Group 1 and 2 neurons are very similar, but group 2 neurons have a long dorsal branch in the contralateral hemisphere that seems to innervate both the ventral lateral horn and the dorsal PLP. They innervate the most lateral ventral regions, both ipsi and contralaterally.
+
+Groups 3 and 4 (more anterior than 1 and 2 in the ipsi AMMC and contralateral IVLP): 4 has a more posterior and medial innervation in the contralateral IVLP. 3 has the most lateral innervation in the contralateral IVLP and ipsilateral AMMC.
+
+Groups 5 and 6: 5 corresponds to the strict Lai type. Group 6 has redced innervation in the ipsilateral AMMC and mroe extensive in the contralateral IVLP. A couple of neurons have either a longer dorsal branch or ventral branches on the contralateral IVLP
+
+Group 3 corresponds to the strict Lai type.
+
+Frontal view.
+```{r AMMC-IVLP_PN2_g1-6, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(op)
+plot3d(ammcivlppn2candshc, k=6, soma=T)
+```
+
+Posterior view.
+```{r AMMC-IVLP_PN2_g1-6.post, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(oppost)
+plot3d(ammcivlppn2candshc, k=6, soma=T)
+```
+
+Lateral view.
+```{r AMMC-IVLP_PN2_g1-6.lat, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(oplat)
+plot3d(ammcivlppn2candshc, k=6, soma=T)
+```
+
+Plot one of each group plus the query.
+```{r AMMC-IVLP_PN2_g1-6.query, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(op)
+plot3d("DvGlutMARCM-F002279_seg001", soma=T, lwd=2)
+plot3d(subset(ammcivlppn2candshc, k=6, groups=1)[15], soma=T, col='red', lwd=2)
+plot3d(subset(ammcivlppn2candshc, k=6, groups=2)[5], soma=T, col='yellow', lwd=2)
+plot3d(subset(ammcivlppn2candshc, k=6, groups=3)[10], soma=T, col='green', lwd=2)
+plot3d(subset(ammcivlppn2candshc, k=6, groups=4)[15], soma=T, col='cyan', lwd=2)
+plot3d(subset(ammcivlppn2candshc, k=6, groups=5)[10], soma=T, col='blue', lwd=2)
+plot3d(subset(ammcivlppn2candshc, k=6, groups=6)[15], soma=T, col='magenta', lwd=2)
+```
+
+IVLP-IVLP PN (TPHMARCM-M001757_seg002)
+------------------------------
+
+This neuron type is not shown in the figure.
+
+Plot the IVLP-IVLP PN named by Lai et al. (2012).
+```{r Lai_IVLP-IVLP_PN, cache=TRUE, custom.plot=TRUE}
+clear3d()
+plot3d(FCWB)
+par3d(opneuron)
+plot3d(FCWBNP.surf, materials=c("IVLP_L", "IVLP_R"), alpha=0.2)
+plot3d("TPHMARCM-M001757_seg002", soma=T, lwd=2)
+```
+
+Find all annotated AMMC-AMMC PN1, nblast and collect high scorers.
+
+```{r find_IVLP-IVLP_PN, cache=TRUE, custom.plot=TRUE}
+clear3d()
+sc=fc_nblast(subset(dps,NeuronType(gene_name)=='IVLP-IVLP PN',rval='names'),normalisation='mean')
+# highish threshold of 0.5 but only has to be against 1
+ivlpivlpcands=names(which(apply(sc,1,function(x) sum(x>0.5))>0))
+op=structure(list(FOV = 0, userMatrix = structure(c(1, 0, 0, 0, 
+0, -1, 0, 0, 0, 0, -1, 0, 2.21588273462725, 1.32316382712298, 
+0, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.694574952125549), .Names = c("FOV", 
+"userMatrix", "scale", "zoom"))
+par3d(op)
+plot3d(ivlpivlpcands, soma=T)
+```
+
+There are only `r length(ivlpivlpcands)`. With only these neurons it is not clear if there are lamination differences or not.
