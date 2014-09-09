@@ -1,0 +1,253 @@
+---
+title: "Neuron_search"
+output: html_document
+---
+
+Neuron Search fig
+========================================================
+Panels for Neuron Search figure.
+```{r echo=FALSE,message=FALSE,warning=FALSE}
+source("../../R/StartUp.R", chdir = TRUE)
+opts_chunk$set(message=FALSE,fig.height=21.8/25.4, fig.width=36.334/25.4, dev='png', dpi=300, fig.path="figure/")
+library(mixOmics)
+knit_hooks$set(custom.plot = hook_rgl2) #Needed to embed plots
+par3dmini=c("FOV", "userMatrix", "scale", "zoom")
+```
+
+```{r remote-score-matrix}
+neuron_search_score_mat <- load_si_data("neuron_search_score_mat.rds")
+options(flycircuit.scoremat=neuron_search_score_mat)
+```
+
+Scale bar
+--------------------
+
+```{r scaleBar, fig.height=18.642/25.4, fig.width=3.175/25.4}
+imscalebar(seq(0,1,len=11),col=jet.colors(10),horizontal=F, mar=c(0,0,0,0))
+```
+
+Panel B: Pair of same raw image, different segmentation
+-------------------------------
+
+Plot the query neuron
+```{r FruMARCM-M001629_seg001_black, custom.plot=TRUE, fig.height=27.164/25.4, fig.width=45.364/25.4, cache=TRUE}
+nopen3d()
+plot3d(FCWB)
+op=structure(list(FOV = 0, userMatrix = structure(c(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.218791082501411), .Names = c("FOV", "userMatrix", "scale", "zoom"))
+par3d(op)
+plot3d("FruMARCM-M001629_seg001", col='black', lwd=2, soma=T)
+```
+
+Plot the query and the top hit.
+```{r FruMARCM-M001629_seg001_blackandTophit, custom.plot=TRUE, fig.height=27.164/25.4, fig.width=45.364/25.4, cache=TRUE}
+clear3d()
+par3d(op)
+par3d(zoom=0.631736993789673)
+plot3d("FruMARCM-M001629_seg001", col='black', lwd=1, soma=T)
+plot3d(names(sort(fc_nblast("FruMARCM-M001629_seg001"), decreasing=T)[2]), col='red', lwd=4, soma=T)
+```
+
+Plot the top 8.
+```{r FruMARCM-M001629_seg001_top8, custom.plot=TRUE, fig.height=27.164/25.4, fig.width=45.364/25.4, cache=TRUE}
+clear3d()
+par3d(op)
+par3d(zoom=0.631736993789673)
+plot3d("FruMARCM-M001629_seg001", col='black', lwd=1, soma=T)
+plot3d(names(sort(fc_nblast("FruMARCM-M001629_seg001"), decreasing=T)[2]), col='red', lwd=4, soma=T)
+plot3d(names(sort(fc_nblast("FruMARCM-M001629_seg001"), decreasing=T)[3:11]), soma=T)
+```
+
+For C panels
+---------------------
+
+Plot histogram of scores, showing all hits. It is an inset in another graph.
+```{r FruMARCM-M001629-nblast_scoreplot-allscoresblack-small, fig.width=34.635/25.4*3.5, fig.height=34.464/25.4*3.5, cache=TRUE}
+par(mar=c(0,2,0,0))
+qq=qplot(fc_nblast("FruMARCM-M001629_seg001"), binwidth=200, xlab="Forward score", ylab="Count")
+qq+ theme(panel.background=element_rect(fill="grey80"), panel.grid.minor=element_line(colour='grey80'), axis.text.x=element_text(size=22), axis.text.y=element_text(size=22), axis.title.x=element_text(size=26), axis.title.y=element_text(size=26)) + geom_vline(xintercept = 0, colour="red", linetype=2, size=1)
+# the probability for values under 0 is:
+fwdfru=sort(fc_nblast("FruMARCM-M001629_seg001"), decreasing=T)
+ecdf(fwdfru)(0)
+```
+
+Plot histogram with xlim at -5000 in zoomed version.
+```{r FruMARCM-M001629-nblast_scoreplot-allblackzoom, fig.width=35.029/25.4*3.5, fig.height=34.464/25.4*3.5, cache=TRUE}
+same2zoom=qplot(fc_nblast("FruMARCM-M001629_seg001"), bindwidth=60, ylim=c(0,10), xlim=c(6500, 10000), xlab="Forward score", ylab="Count") + theme(panel.background=element_rect(fill="grey80"), panel.grid.minor=element_line(colour='grey80'), axis.text.x=element_text(size=22), axis.text.y=element_text(size=22), axis.title.x=element_text(size=26), axis.title.y=element_text(size=26))
+par(mar=c(0,2,0,0))
+plot(same2zoom,lwd=.3)
+```
+
+Show example search with auditory neuron with raw scores. 
+
+Histogram of scores coloured by score bins.
+```{r FruMARCM-M001629-nblast_scoreplot-raw-wide, fig.width=143.861/25.4*3.5, fig.height=64.911/25.4*3.5, cache=TRUE}
+fwdfru_5000=fwdfru[fwdfru>-5000]
+bb2=cut(fwdfru_5000, breaks=c(-5000,seq(0, max(fwdfru), len=10)))
+cols2=mixOmics::jet.colors(10)[bb2]
+names(cols2)=names(fwdfru_5000)
+m<-cbind(fwdfru_5000,cols2)
+m<-as.data.frame(m, stringsAsFactors=F)
+m$cols2=factor(m$cols2)
+rownames(m)=names(fwdfru_5000)
+#Replace "#00008E" (dark blue) for "#000000" (black)
+levels(m$cols2)=c("#000000", "#0000FF", "#0070FF", "#00DFFF", "#50FFAE", "#7F0000", "#BFFF3F", "#FF5F00", "#FFCE00")
+qq=qplot(fwdfru_5000, geom="histogram", binwidth=180, xlab="Foward score", ylab="Count", colour=factor(cols2), fill=factor(cols2))
+scoreplot=qq+scale_colour_manual(values=c("#000000", "#0000FF", "#0070FF", "#00DFFF", "#50FFAE", "#7F0000", "#BFFF3F", "#FF5F00", "#FFCE00"))+scale_fill_manual(values=c("#000000", "#0000FF", "#0070FF", "#00DFFF", "#50FFAE", "#7F0000", "#BFFF3F", "#FF5F00", "#FFCE00"))+ theme(axis.text.x=element_text(size=22), axis.text.y=element_text(size=22), axis.title.x=element_text(size=26), axis.title.y=element_text(size=26), legend.position="none")
+par(mar=c(0,2,0,0))
+plot(scoreplot)
+```
+
+Make neuron plots of each coloured group in the histogram (score bins), except for last group (in black, <0).
+
+First group (red)
+```{r FruMARCM-M001629_seg001_over0-scoreg1, custom.plot=TRUE,fig.width=36.258/25.4, fig.height=21.755/25.4, cache=TRUE, rgl.wait=1}
+clear3d()
+op=structure(list(FOV = 0, userMatrix = structure(c(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.633195042610168), .Names = c("FOV", "userMatrix", "scale", "zoom"))
+par3d(op)
+plot3d(rownames(subset(m, cols2==as.character(unique(m$cols2)[1]))), soma=T, col=as.character(unique(m$cols2)[1]), lwd=2)
+```
+
+Second group.
+```{r FruMARCM-M001629_seg001_over0-scoreg2, custom.plot=TRUE,fig.width=36.258/25.4, fig.height=21.755/25.4, cache=TRUE}
+clear3d()
+par3d(op)
+plot3d(rownames(subset(m, cols2==as.character(unique(m$cols2)[2]))), soma=T, col=as.character(unique(m$cols2)[2]))
+```
+
+Third group.
+```{r FruMARCM-M001629_seg001_over0-scoreg3, custom.plot=TRUE,fig.width=36.258/25.4, fig.height=21.755/25.4, cache=TRUE}
+clear3d()
+par3d(op)
+plot3d(rownames(subset(m, cols2==as.character(unique(m$cols2)[3]))), soma=T, col=as.character(unique(m$cols2)[3]))
+```
+
+Fourth group.
+```{r FruMARCM-M001629_seg001_over0-scoreg4, custom.plot=TRUE,fig.width=36.258/25.4, fig.height=21.755/25.4, cache=TRUE}
+clear3d()
+par3d(op, zoom=0.6648548)
+plot3d(rownames(subset(m, cols2==as.character(unique(m$cols2)[4]))), soma=T, col=as.character(unique(m$cols2)[4]))
+```
+
+Fifth group.
+```{r FruMARCM-M001629_seg001_over0-scoreg5, custom.plot=TRUE,fig.width=36.258/25.4, fig.height=21.755/25.4, cache=TRUE}
+clear3d()
+par3d(op, zoom=0.6648548)
+plot3d(rownames(subset(m, cols2==as.character(unique(m$cols2)[5]))), soma=T, col=as.character(unique(m$cols2)[5]))
+```
+
+Sixth group.
+```{r FruMARCM-M001629_seg001_over0-scoreg6, custom.plot=TRUE,fig.width=36.258/25.4, fig.height=21.755/25.4, cache=TRUE}
+clear3d()
+par3d(op)
+plot3d(rownames(subset(m, cols2==as.character(unique(m$cols2)[6]))), soma=T, col=as.character(unique(m$cols2)[6]))
+```
+
+Seventh group.
+```{r FruMARCM-M001629_seg001_over0-scoreg7, custom.plot=TRUE,fig.width=36.258/25.4, fig.height=21.755/25.4, cache=TRUE}
+clear3d()
+par3d(op)
+plot3d(rownames(subset(m, cols2==as.character(unique(m$cols2)[7]))), soma=T, col=as.character(unique(m$cols2)[7]))
+```
+
+Eight group.
+```{r FruMARCM-M001629_seg001_over0-scoreg8, custom.plot=TRUE, fig.width=36.258/25.4, fig.height=21.755/25.4, cache=TRUE, rgl.wait=1}
+clear3d()
+par3d(op, zoom=0.5743266)
+plot3d(rownames(subset(m, cols2==as.character(unique(m$cols2)[8]))), soma=T, col=as.character(unique(m$cols2)[8]))
+```
+
+Last B panel
+-------------------------
+
+Plot all target neurons coloured by score for >0, query in red.
+```{r FruMARCM-M001629_seg001_over0raw, custom.plot=TRUE, fig.height=27.164/25.4, fig.width=45.364/25.4, cache=TRUE}
+clear3d()
+plot3d(FCWB)
+par3d(op)
+plot3d("FruMARCM-M001629_seg001", lwd=2, soma=T, col="red")
+plot3d(names(fwdfru_5000[fwdfru_5000>0]), soma=T, col=cols2[fwdfru_5000>0])
+```
+
+For D panels
+------------------------
+
+Plotting of neurons for panels D, explaining the different scores. Comparing normalised and non normalised score for big neuron vs small neuron.
+
+Plot big neuron.
+```{r dTdc2MARCM-F000115_seg001_bigNeuron, custom.plot=TRUE, fig.width=22.931/25.4, fig.height=17.755/25.4, cache=TRUE}
+clear3d()
+plot3d(FCWB, alpha=0)
+op=structure(list(FOV = 0, userMatrix = structure(c(1, 0, 0, 0, 
+0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1), .Dim = c(4L, 4L)), scale = c(1, 
+1, 1), zoom = 0.472224056720734), .Names = c("FOV", "userMatrix", 
+"scale", "zoom"))
+par3d(op)
+plot3d("dTdc2MARCM-F000115_seg001")
+```
+
+Plot small neuron in red.
+```{r FruMARCM-M002574_seg002_SmallNeuron_red, custom.plot=TRUE, fig.width=22.931/25.4, fig.height=17.971/25.4, cache=TRUE}
+clear3d()
+plot3d(FCWB, alpha=0)
+op=structure(list(FOV = 0, userMatrix = structure(c(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.472224056720734), .Names = c("FOV", "userMatrix", "scale", "zoom"))
+par3d(op)
+plot3d("FruMARCM-M002574_seg002", col='red')
+```
+
+Plot another small neuron in black.
+```{r DvGlutMARCM-F004164_seg001_SmallNeuron2_black, custom.plot=TRUE, fig.width=22.931/25.4, fig.height=18.053/25.4, cache=TRUE}
+clear3d()
+plot3d(FCWB, alpha=0)
+op=structure(list(FOV = 0, userMatrix = structure(c(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.472224056720734), .Names = c("FOV", "userMatrix", "scale", "zoom"))
+par3d(op)
+plot3d("DvGlutMARCM-F004164_seg001", col='black')
+```
+
+Get scores for panels.
+```{r nblast_scores_raw_and_mean, cache=TRUE}
+fc_nblast("dTdc2MARCM-F000115_seg001", "FruMARCM-M002574_seg002") # big vs small 1
+fc_nblast("FruMARCM-M002574_seg002","dTdc2MARCM-F000115_seg001") # small 1 vs big
+fc_nblast("FruMARCM-M002574_seg002","DvGlutMARCM-F004164_seg001") # small 1 vs small 2
+fc_nblast("DvGlutMARCM-F004164_seg001","FruMARCM-M002574_seg002") # small 2 vs small 1
+fc_nblast("dTdc2MARCM-F000115_seg001", "FruMARCM-M002574_seg002", norm="mean") # mean score big vs small 1
+fc_nblast("DvGlutMARCM-F004164_seg001","FruMARCM-M002574_seg002", norm="mean") # mean score small 2 vs small 1
+fc_nblast("dTdc2MARCM-F000115_seg001","dTdc2MARCM-F000115_seg001") #self score big
+fc_nblast("DvGlutMARCM-F004164_seg001","DvGlutMARCM-F004164_seg001") #self score small 2
+fc_nblast("FruMARCM-M002574_seg002","FruMARCM-M002574_seg002") #self score small 1
+```
+
+Get normalised scores.
+```{r nblast_scores_normalised, cache=TRUE}
+fc_nblast("dTdc2MARCM-F000115_seg001", "FruMARCM-M002574_seg002")/fc_nblast("dTdc2MARCM-F000115_seg001","dTdc2MARCM-F000115_seg001") # normalised big vs small 1
+fc_nblast("FruMARCM-M002574_seg002","dTdc2MARCM-F000115_seg001")/fc_nblast("FruMARCM-M002574_seg002","FruMARCM-M002574_seg002") # normalised small 1 vs big
+fc_nblast("DvGlutMARCM-F004164_seg001","FruMARCM-M002574_seg002")/fc_nblast("DvGlutMARCM-F004164_seg001","DvGlutMARCM-F004164_seg001") # normalised small 2 vs small 1
+fc_nblast("FruMARCM-M002574_seg002","DvGlutMARCM-F004164_seg001")/fc_nblast("FruMARCM-M002574_seg002","FruMARCM-M002574_seg002") # normalised small 1 vs small 2
+```
+
+Plots for E panels
+---------------------------
+
+Collect the tophit for each neuron (rank 2) from dataframe tophits and plot forward normalised scores as histogram.
+```{r TopHitsMeanScore, fig.width=60.156/25.4*5, fig.height=60.325/25.4*5, cache=TRUE}
+tophits2=subset(tophits, query%in%good_images)
+normscoresall=mapply(fc_nblast, tophits2[,'target'], tophits2[,'query'], normalisation='mean')
+summary(normscoresall)
+quantile(normscoresall, probs=0.99)
+qq=qplot(normscoresall, binwidth=0.01, ylab="Count", xlab="Forward score of top hit")
+par(mar=c(0,2,0,0))
+qq+theme(axis.text.x=element_text(size=22), axis.text.y=element_text(size=22), axis.title.x=element_text(size=26), axis.title.y=element_text(size=26)) + geom_vline(xintercept = mean(normscoresall), colour="red", linetype=2, size=2) + geom_vline(xintercept = quantile(normscoresall, 0.99), colour="green", linetype=2, size=2)
+```
+
+Plot of neuron images divided by type: same raw image, same segmentation, same specimen or different specimen
+```{r SimilarNeuronType, fig.width=116.064/25.4*5, fig.height=60.591/25.4*5, cache=TRUE}
+qq2=ggplot(data=subset(top80sym,!duplicated(pair.number) | is.na(pair.number)), aes(x=revscore.norm, y=value.norm)) + geom_point(aes(colour=type), size=10) + labs(x="Reverse score", y="Forward score", colour="Image Type")+theme(axis.text.x=element_text(size=22), axis.text.y=element_text(size=22), axis.title.x=element_text(size=26), axis.title.y=element_text(size=26), legend.text=element_text(size=26), legend.title=element_text(size=26),legend.position=c(0.86, 0.11))
+levels(qq2$data$type)<-c("Same segmentation", "Same raw image", "Same specimen", "Different specimen")
+plot(qq2)
+```
+
+Inset showing all neuron hits, forward vs reverse normalised scores.
+```{r SimilarNeuronType_allhits, fig.width=25.400/25.4*5, fig.height=25.311/25.4*5, cache=TRUE}
+qq3=qplot(data=subset(tophits2, !duplicated(qp)), y=value.norm, x=revscore.norm, xlab="Reverse score", ylab="Forward score")+ geom_vline(xintercept=0.8) +geom_hline(yintercept=0.8)+ theme(panel.background=element_rect(fill="grey80"), panel.grid.minor=element_line(colour='grey80'), axis.text.x=element_text(size=22), axis.text.y=element_text(size=22), axis.title.x=element_text(size=26), axis.title.y=element_text(size=26))
+par(mar=c(0,2,0,0))
+plot(qq3)
+```
