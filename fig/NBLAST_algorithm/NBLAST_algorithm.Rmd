@@ -1,0 +1,88 @@
+---
+title: "NBLAST_algorithm"
+output: html_document
+---
+
+NBLAST figure
+==============================
+Some of the panels for NBLAST_algorithm figure.
+```{r startup, echo=FALSE,message=FALSE,warning=FALSE}
+source("../../R/StartUp.R", chdir = TRUE)
+opts_chunk$set(message=FALSE,fig.height=21.8/25.4, fig.width=36.334/25.4, dev='png', dpi=300, fig.path="figure/")
+dir.create('figure')
+knit_hooks$set(custom.plot = hook_rgl) #Needed to embed plots
+par3dmini=c("FOV", "userMatrix", "scale", "zoom")
+```
+
+Sample 50 neurons before and after flipping (original and flipped, respectively).
+```{r sample_neurons}
+set.seed(18)
+sample3=sample(dps,50)
+```
+
+Plot 50 flipped neurons.
+```{r Flipped50Neurons, custom.plot=TRUE}
+nopen3d()
+plot3d(FCWB)
+# op=par3d(no.readonly = F)
+# dput(op[par3dmini])
+op=structure(list(FOV = 0, userMatrix = structure(c(1, 0, 0, 0, 
+0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1), .Dim = c(4L, 4L)), scale = c(1, 
+1, 1), zoom = 0.587089359760284), .Names = c("FOV", "userMatrix", 
+"scale", "zoom"))
+par3d(op)
+plot3d(names(sample3), soma=T, col=rainbow(50))
+```
+
+And now the unflipped version.
+```{r Unflipped50Neurons, custom.plot=TRUE}
+flipped3=with(sample3, flipped)
+sorig3<-mirror_brain(sample3, subset=flipped3, brain = FCWB)
+#extract metadata df
+df=attr(sorig3,'df')
+# mirror the cell body pos for neurons we just flipped
+mirrored_cb_pos=mirror_brain(attr(sorig3,'df')[flipped3, c("X", "Y", "Z")], brain=FCWB)
+df[rownames(mirrored_cb_pos),colnames(mirrored_cb_pos)]=mirrored_cb_pos
+attr(sorig3, 'df')=df
+clear3d()
+plot3d(FCWB)
+par3d(op)
+plot3d(sorig3, soma=T)
+```
+
+Nearest neighbour diagram
+--------------------------
+Plot 2 neurons for nearest neighbour diagram, one in red and one in black.
+```{r nearest_neighbour_neurons, custom.plot=TRUE}
+clear3d()
+op=
+structure(list(FOV = 0, userMatrix = structure(c(0.991477966308594, 
+-0.0432921275496483, 0.122870959341526, 0, -0.0529103018343449, 
+-0.995693325996399, 0.076126255095005, 0, 0.119046114385128, 
+-0.0819786190986633, -0.989498555660248, 0, -11.4607306188373, 
+3.65054376386083, 2.88657986402541e-15, 1), .Dim = c(4L, 4L)), 
+    scale = c(1, 1, 1), zoom = 0.822702646255493), .Names = c("FOV", 
+"userMatrix", "scale", "zoom"))
+par3d(op)
+plot3d("FruMARCM-M002099_seg001",col='red',lwd=2, soma=T)
+plot3d("FruMARCM-M002609_seg001", lwd=2, soma=T, col='black')
+```
+
+DL2 neurons
+--------------
+
+Plot the DL2 PNs used to generate the right prob(match).
+```{r DL2Neurons, custom.plot=TRUE}
+dl2=subset(glomdf, grepl('DL2', text))$gene_name
+dl2=intersect(dl2, good_images)
+length(dl2)
+greenpal=rainbow(length(intersect(dl2, good_images)), start=2/6, end=0.49999999, s=c(0.5, 0.6, 0.7, 0.8, 0.9, 1), v=c(0.5, 0.6, 0.7, 0.8, 0.9, 1))
+clear3d()
+plot3d(FCWB)
+op=structure(list(FOV = 0, userMatrix = structure(c(1, 0, 0, 0, 
+0, -1, 0, 0, 0, 0, -1, 0, -86.3129562633307, -50.984995041813, 
+0, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.246810808777809), .Names = c("FOV", 
+"userMatrix", "scale", "zoom"))
+par3d(op)
+plot3d(dl2, soma=T, col=greenpal)
+```
