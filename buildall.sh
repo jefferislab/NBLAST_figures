@@ -2,6 +2,13 @@
 library(methods)
 library(rmarkdown)
 
+options(repos="http://cran.rstudio.com/")
+install.packages('devtools')
+devtools::install_github('jefferis/nat')
+library(nat)
+print(cmtk.bindir())
+print(dir(cmtk.bindir())
+
 root_dir <- getwd()
 rmarkdown_files <- dir(pattern=".Rmd", recursive=TRUE)
 rmarkdown_files <- file.path(root_dir, rmarkdown_files)
