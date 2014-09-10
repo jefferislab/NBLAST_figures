@@ -7,7 +7,7 @@ options('flycircuit.scoremat'="allbyallblastcv4.5")
 if(!require("flycircuit") || packageVersion('flycircuit')<package_version('0.5.3') ){
   message("Installing/Updating packages!")
   # use rstudio CRAN repository if none set
-  if(is.null(getOption("repos")))
+  if(!interactive())
     options(repos="http://cran.rstudio.com")
 
   # install standard packages
