@@ -1,0 +1,651 @@
+---
+title: "KenyonCellAnalysis"
+output: html_document
+---
+
+
+Kenyon Cell analysis
+====================
+Classically [Kenyon cells](http://www.virtualflybrain.org/site/tools/anatomy_finder/index.htm?id=FBbt:00003686) have been divided into three types, in birth order
+
+  * gamma
+  * alpha'/beta'
+  * alpha/beta
+
+Subsequently additional types have been proposed. Presently [VFB lists](http://www.virtualflybrain.org/do/ont_bean_list.html?action=subclass&id=FBbt:00003686) 3 additional types:
+
+  * alpha'/beta'
+    * anterior
+    * middle
+    * posterior
+
+Setting Up
+-----------------
+```{r startup, warning=FALSE}
+source("../../R/StartUp.R", chdir = TRUE)
+suppressMessages(library(apcluster))
+# set up for rgl plots
+opts_chunk$set(message=FALSE,fig.height=22.605/25.4*1.5, fig.width=34.925/25.4*1.5, dev='png', dpi=300, include=TRUE, fig.path="figure/")
+knit_hooks$set(custom.plot = hook_rgl) #Needed to embed plots
+par3dmini=c("FOV", "userMatrix", "scale", "zoom")
+```
+
+```{r remote-score-matrix}
+KC_score_mat <- load_si_data("KC_score_mat.rds")
+options(flycircuit.scoremat=KC_score_mat)
+```
+
+Finding the Kenyon Cells
+-----------------
+
+Plot the mushroom body neuropil.
+```{r mb_neuropil, custom.plot=TRUE, cache=TRUE}
+clear3d()
+op=structure(list(FOV = 0, userMatrix = structure(c(1, 0, 0, 0, 
+0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1), .Dim = c(4L, 4L)), scale = c(1, 
+1, 1), zoom = 0.630000054836273), .Names = c("FOV", "userMatrix", 
+"scale", "zoom"))
+par3d(op)
+plot3d(materials=subset(FCWBNP.surf$RegionList, grepl("MB_", FCWBNP.surf$RegionList)), alpha=0.3, FCWBNP.surf)
+```
+
+First let's load an affinity propagation clustering of all Kenyon cells.
+```{r apresmb, cache=TRUE}
+apresmb <- load_si_data('apresmb2.rds')
+kcexemplars=names(apresmb@exemplars)
+```
+
+There are `r length(kcexemplars)` exemplar Kenyon cells selected by the affinity
+propagation clustering. These should cover the full diversity of Kenyon cell types.
+
+```{r kcexemplars, custom.plot=TRUE, echo=FALSE, cache=TRUE}
+clear3d()
+op=structure(list(FOV = 0, userMatrix = structure(c(0.648256838321686, -0.0764600187540054, 0.757573187351227, 0, 0.133731365203857, -0.968046247959137, -0.212136670947075, 0, 0.749585688114166, 0.238830417394638, -0.617317676544189, 0, -2.6362581378199, -3.5296193308198, 1.8444030284882, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.58467960357666), .Names = c("FOV", "userMatrix", "scale", "zoom"))
+par3d(op)
+plot3d(kcexemplars,soma=T)
+```
+
+So that does indeed include the 3 classic types. Let's make a dataframe of 
+information about all the neurons.
+
+```{r kcs-data.frame, cache=TRUE}
+# make a new column in data frame to store type info
+kcs=as.data.frame(apresmb)
+kcs$type=NA
+```
+
+3 Classic KC Types
+-----------------------
+
+## Alpha/Beta versus the rest
+OK let's start dividing up into main morphological classes.
+```{r abg, cache=TRUE, fig.height=27.038/25.4*1.5, fig.width=181.480/25.4*1.5}
+hcmb=hclustfc(kcs$item)
+hcmb$height=sqrt(hcmb$height)
+dhcmb=colour_clusters(hcmb,k=2)
+labels(dhcmb)=NULL
+par(mar=c(0,2,0,0))
+plot(dhcmb)
+kcs[subset(hcmb,k=2,groups=2),'type']='ab'
+```
+
+Confirm that group 2 neurons are alpha/beta.
+```{r alphabeta.rgl, custom.plot=TRUE, echo=FALSE, cache=TRUE}
+clear3d()
+op=structure(list(FOV = 0, userMatrix = structure(c(0.648256838321686, -0.0764600187540054, 0.757573187351227, 0, 0.133731365203857, -0.968046247959137, -0.212136670947075, 0, 0.749585688114166, 
+0.238830417394638, -0.617317676544189, 0, -1.97863405052573, -21.9430928314483, 1.84440302848818, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.481017380952835), .Names = c("FOV", "userMatrix", "scale", "zoom"))
+par3d(op)
+plot3dfc(kcexemplars,lwd=.25,col='lightgrey',soma=T)
+plot3d(subset(hcmb, k=2, groups = 2), soma=T, col='deeppink3')
+```
+
+## Gamma and alpha'/beta'
+
+Recluster  neurons and divide into 3 groups.
+```{r recluster_gamma_apbp, cache=TRUE, fig.height=49.193/25.4*1.5, fig.width=52.446/25.4*1.5}
+hcmb2=hclustfc(subset(hcmb, k=2, groups = 1))
+hcmb2$height=sqrt(hcmb2$height)
+dhcmb2=colour_clusters(hcmb2,k=3)
+labels(dhcmb2)=NULL
+par(mar=c(0,2,0,0))
+plot(dhcmb2)
+```
+
+Plot the 3 groups in 3D.
+```{r gamma.apbp.rgl, custom.plot=TRUE, cache=TRUE}
+clear3d()
+op=structure(list(FOV = 0, userMatrix = structure(c(0.760397255420685, -0.089378222823143, 0.643278956413269, 0, 0.395794332027435, 
+-0.721528589725494, -0.56810474395752, 0, 0.514920055866241, 0.686591565608978, -0.513273119926453, 0, -2.16882995139968, -7.31256332767846, 2.28123521804812, 1), .Dim = c(4L, 4L)), scale = c(1, 
+1, 1), zoom = 0.58467960357666), .Names = c("FOV", "userMatrix", "scale", "zoom"))
+par3d(op)
+plot3dfc(kcexemplars,lwd=.25,col='lightgrey',soma=T)
+plot3d(hcmb2,k=3)
+```
+
+OK, so group 2 contains alpha'/beta'.
+```{r alphapbetap.rgl, custom.plot=TRUE, cache=TRUE}
+clear3d()
+apbpop=structure(list(FOV = 0, userMatrix = structure(c(0.760397255420685, -0.089378222823143, 0.643278956413269, 0, 0.395794332027435, 
+-0.721528589725494, -0.56810474395752, 0, 0.514920055866241, 0.686591565608978, -0.513273119926453, 0, -8.52922951489078, -5.45744682037794, 2.28123521804815, 1), .Dim = c(4L, 4L)), scale = c(1, 
+1, 1), zoom = 0.530321657657623), .Names = c("FOV", "userMatrix", "scale", "zoom"))
+par3d(apbpop)
+plot3dfc(kcexemplars,lwd=.25,col='lightgrey',soma=T)
+plot3d(subset(hcmb2,k=3,groups=2), soma=T, col="darkblue")
+```
+
+and the others are gamma
+```{r gamma.rgl, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(op)
+plot3dfc(kcexemplars,lwd=.25,col='lightgrey',soma=T)
+plot3d(hcmb2, k=3, groups=c(1,3), soma=TRUE)
+```
+
+Let's record the types. We'll investigate them in detail later.
+```{r set_types}
+kcs[subset(hcmb2,k=3,groups=2),'type']="apbp"
+kcs[subset(hcmb2,k=3,groups=c(1,3)),'type']="gamma"
+```
+
+Following the analysis below, we found some neurons in the main types that should not be in those groups. We've corrected the type annotation for the ones below:
+```{r corrections_to_set_types, cache=TRUE}
+notgamma=c("GadMARCM-F000415_seg001", "DvGlutMARCM-F1496_seg1") #originally classified as gamma, but innervate both lobes, alpha'/beta'
+kcs[notgamma, 'type']="apbp"
+kcs["FruMARCM-M002170_seg001", 'type']=NA #originally classified as alpha/beta but only innervates medial lobe, beta lobe.
+weird=c("FruMARCM-F000584_seg003", "FruMARCM-F000794_seg001", "FruMARCM-M001582_seg003", "FruMARCM-F000667_seg001", "DvGlutMARCM-F178_seg2") #originally classified as alpha/beta but only innervates vertical lobe, alpha lobe (group 3, subgroup 4)
+kcs[weird, 'type']=NA
+weird2=c("FruMARCM-M000234_seg001", "FruMARCM-M001348_seg001", "FruMARCM-F000193_seg001", 
+"ChaMARCM-F000511_seg002", "FruMARCM-M000253_seg001", "FruMARCM-F001115_seg002", 
+"GadMARCM-F000094_seg002", "DvGlutMARCM-F002453_seg001", "FruMARCM-M001933_seg002", 
+"FruMARCM-F001756_seg002", "ChaMARCM-F000746_seg001", "DvGlutMARCM-F003280_seg002"
+) #originally classified as alpha/beta but only innervates vertical lobe, alpha lobe (group 4, subgroup 2)
+kcs[weird2, 'type']=NA
+```
+
+Let's tidy up our data frame quickly and add some useful information.
+```{r kcs_merge_neuron,cache=TRUE}
+kcs$type=factor(kcs$type)
+newfields=c('soma_side','Driver','Gender')
+kcs=cbind(kcs,attr(dps,'df')[kcs$item,newfields])
+kcs[newfields]=lapply(kcs[newfields],factor)
+```
+
+## Initial Conclusion
+
+So now we have 3 main KC types: `r levels(factor(kcs$type))` (n=`r table(kcs$type)`, respectively). 
+
+Kenyon Cell Subtypes
+---------------------------
+
+Now let's look at each of those main types in turn to see if there are any subtypes to find.
+
+## Gamma Neuron Subtypes
+
+Starting with gamma neurons:
+
+Plot all gamma neurons.
+```{r gamma_neurons.rgl, cache=TRUE, custom.plot=TRUE}
+clear3d()
+op=structure(list(FOV = 0, userMatrix = structure(c(0.731466829776764, -0.0248482599854469, 0.68142431974411, 0, 0.410978019237518, -0.781360507011414, -0.469651877880096, 0, 0.544107794761658, 0.623585283756256, -0.561327278614044, 0, -5.35291620580356, -5.82318211519839, 2.53282165527342, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.530321657657623), .Names = c("FOV", "userMatrix", "scale", "zoom"))
+par3d(op)
+plot3dfc(kcexemplars,lwd=.25,col='lightgrey',soma=T)
+plot3d(subset(kcs, type=='gamma')$item, soma=TRUE, col='forestgreen')
+```
+
+Cluster and divide into 2 groups.
+```{r gamma_neurons_subtypes, cache=TRUE, fig.height=49.193/25.4*1.5, fig.width=52.446/25.4*1.5}
+hcmbg=hclustfc(subset(kcs, type=='gamma')$item)
+df=attr(dps,'df')
+# plot(hcmbg,label=df[as.character(subset(kcs, type=='gamma')$item),'Driver'])
+hcmbg$height=sqrt(hcmbg$height)
+dhcmbg=colour_clusters(hcmbg,k=2)
+labels(dhcmbg)=NULL
+par(mar=c(0,2,0,0))
+plot(dhcmbg)
+```
+
+Just cutting into 2 groups gives what looks like a medial and a lateral group:
+
+Interestingly there seems to be some evidence of spatial segregation all the way down the peduncle to the lobe.
+```{r gamma_subclust.rgl, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(op)
+plot3dfc(kcexemplars,lwd=.25,col='lightgrey',soma=T)
+plot3d(hcmbg, k=2, soma=TRUE)
+```
+
+Let's try cutting a bit further into 3 groups rather than 2.
+```{r cutgamma, cache=TRUE, fig.height=30/25.4*1.5, fig.width=70.797/25.4*1.5}
+dhcmbg2=colour_clusters(hcmbg,k=3, groupLabels=as.roman)
+labels(dhcmbg2)=NULL
+par(mar=c(0,2,0,0))
+plot(dhcmbg2)
+abline(h=height_for_ngroups(hcmbg, k=3), lty='dashed')
+```
+
+Plot the 3 groups in frontal view.
+```{r gamma_subclust.rgl3, custom.plot=TRUE, cache=TRUE}
+clear3d()
+opgamma=structure(list(FOV = 0, userMatrix = structure(c(0.971897780895233, 0.0127162486314774, 0.23506024479866, 0, 0.202489703893661, -0.554406821727753, -0.807236671447754, 0, 0.120053678750992, 0.832148790359497, -0.541401505470276, 0, -0.327693840344819, -7.89318466492533, 2.8950777053833, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.530321657657623), .Names = c("FOV", "userMatrix", "scale", "zoom"))
+par3d(opgamma)
+plot3dfc(kcexemplars,lwd=.25,col='lightgrey',soma=T)
+plot3d(hcmbg, k=3, soma=TRUE)
+```
+
+And now a posterior view.
+```{r gamma_subclust.rgl3.posterior, custom.plot=TRUE, cache=TRUE}
+clear3d()
+opgammapost=structure(list(FOV = 0, userMatrix = structure(c(-0.982178211212158, 0.187399685382843, 0.0144132077693939, 0, -0.187714532017708, -0.974180102348328, -0.125445559620857, 0, -0.00946706533432007, -0.12591527402401, 0.991995930671692, 0, 7.23795461654663, -5.40765571594238, -7.18756628036499, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1),     zoom = 0.556837737560272), .Names = c("FOV", "userMatrix", "scale", "zoom"))
+par3d(opgammapost)
+plot3dfc(kcexemplars,lwd=.25,col='lightgrey',soma=T)
+plot3d(hcmbg, k=3, soma=TRUE)
+```
+
+Plot a gamma lobe slice.
+```{r preparing_gamma_subclust.rgl3.gammalobe, eval=FALSE}
+s3dgl=select3d()
+mbgall=dps[labels(hcmbg)]
+mbgallgldb=nlapply(mbgall,subset,s3dgl)
+save(mbgallgldb, file="mbgallgldb.rda")
+```
+
+```{r gamma_subclust.rgl3.gammalobe, cache=TRUE, custom.plot=TRUE}
+load_si_data("mbgallgldb.rda")
+clear3d()
+gammalobe=structure(list(FOV = 0, userMatrix = structure(c(-0.040558859705925, -0.00261938944458961, 0.999173581600189, 0, 0.10028849542141, -0.994957208633423, 0.00146286003291607, 0, 0.99413126707077, 0.100264951586723, 0.0406170189380646, 0, -1.26174825827429, -0.334822400402482, 5.9625344276428, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.783526360988617), .Names = c("FOV", "userMatrix", "scale", "zoom"))
+par3d(gammalobe)
+plot3d(hcmbg, k=3, db=mbgallgldb)
+```
+
+There is clearly a group of atypical gamma cells with dendrites outside the main part of the calyx (cluster 2, green).
+
+Plot only classic gamma neurons: groups 1 and 3.
+```{r gamma_subclust.rgl3.1_3only, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(opgamma)
+plot3dfc(kcexemplars,lwd=.25,col='lightgrey',soma=T)
+plot3d(hcmbg, k=3, groups=c(1,3), soma=TRUE)
+```
+
+### Atypical Gamma Neurons
+
+Let's look at those atypical gamma neurons in more detail:
+```{r gamma_subclust.3.2, cache=TRUE, fig.height=22.605/25.4*1.5, fig.width=34.925/25.4*1.5}
+hcmbg3.2=hclustfc(subset(hcmbg, k=3, groups=2))
+hcmbg3.2$height=sqrt(hcmbg3.2$height)
+dhcmbg3.2=colour_clusters(hcmbg3.2,k=3, groupLabels=letters[1:3])
+labels(dhcmbg3.2)=NULL
+par(mar=c(0.5,2,0,0))
+plot(dhcmbg3.2)
+```
+
+Again 3 clusters look sensible, so let's take a look at those neurons in 3d:
+```{r gamma_subclust.rgl3.2, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(op)
+plot3dfc(kcexemplars,lwd=.25,col='lightgrey',soma=T)
+plot3d(hcmbg3.2, k=3, soma=TRUE)
+```
+
+All 3 groups have almost no innervation of the classic calyx and remain significantly fasciculated all the way out to the tip of the medial lobe, sparing large parts of the gamma lobe. Perhaps these could relate to Nick Strausfeld's ancestral Mushroom Bodies without a calyx.
+
+Plot group 1:
+```{r gamma_subclust.rgl3.2.1, custom.plot=TRUE, cache=TRUE}
+clear3d()
+opatgamma=structure(list(FOV = 0, userMatrix = structure(c(0.977056920528412, 0.0213594045490026, 0.211904302239418, 0, 0.133519470691681, -0.836588978767395, -0.53131103515625, 0, 0.165927946567535, 0.547414481639862, -0.820247113704681, 0, -0.447872936725616, -13.2031650543213, 6.79114198684692, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.556837737560272), .Names = c("FOV", "userMatrix", "scale", "zoom"))
+par3d(opatgamma)
+plot3dfc(kcexemplars,lwd=.25,col='lightgrey',soma=T)
+plot3d(hcmbg3.2, k=3, groups=1,soma=TRUE)
+```
+
+And group 2.
+```{r gamma_subclust.rgl3.2.2, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(opatgamma)
+plot3dfc(kcexemplars,lwd=.25,col='lightgrey',soma=T)
+plot3d(hcmbg3.2, k=3, groups=2,soma=TRUE)
+```
+
+And groups 2 and 3.
+```{r gamma_subclust.rgl3.2.2_3, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(opatgamma)
+plot3dfc(kcexemplars,lwd=.25,col='lightgrey',soma=T)
+plot3d(hcmbg3.2, k=3, groups=c(2,3), soma=TRUE)
+```
+
+### Classic Gamma Neurons
+
+What about the remaining gamma neurons?
+```{r gamma_subclust.3.13, cache=TRUE, fig.height=22.605/25.4*1.5, fig.width=34.925/25.4*1.5}
+hcmbg3.13=hclustfc(subset(hcmbg, k=3, groups=c(1,3)))
+hcmbg3.13$height=sqrt(hcmbg3.13$height)
+dhcmbg3.13=color_clusters(hcmbg3.13,k=4, groupLabels=LETTERS[1:4])
+labels(dhcmbg3.13)=NULL
+par(mar=c(0,2,0,0))
+plot(dhcmbg3.13)
+```
+
+4 groups, looks like a good start, but there may still be some substructure. Plotting those 4:
+```{r gamma_subclust.rgl3.13, custom.plot=TRUE, cache=TRUE}
+clear3d() 
+par3d(opgamma)
+plot3dfc(kcexemplars,lwd=.25, col='lightgrey',soma=T)
+plot3d(hcmbg3.13, k=4, soma=TRUE)
+```
+
+And a gamma lobe slice.
+```{r preparing_gamma_subclust.rgl3.13.gammalobe, eval=FALSE}
+s3dgl=select3d()
+mbg=dps[labels(hcmbg3.13)]
+mbggldb=nlapply(mbg,subset,s3dgl)
+save(mbggldb, file="mbggldb.rda")
+```
+
+```{r gamma_subclust.rgl3.13.gammalobe, cache=TRUE, custom.plot=TRUE}
+load_si_data("mbggldb.rda")
+clear3d()
+gammalobe=structure(list(FOV = 0, userMatrix = structure(c(-0.040558859705925, -0.00261938944458961, 0.999173581600189, 0, 0.10028849542141, -0.994957208633423, 0.00146286003291607, 0, 0.99413126707077, 0.100264951586723, 0.0406170189380646, 0, -1.26174825827429, -0.334822400402482, 5.9625344276428, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.783526360988617), .Names = c("FOV", "userMatrix", "scale", "zoom"))
+par3d(gammalobe)
+plot3d(hcmbg3.13, k=4, db=mbggldb)
+```
+
+Although it is not quite as striking as for the alpha/beta neurons, this certainly looks reminiscent of the four-fold clonal organisation due to the mushroom body neuroblasts. Furthermore in contrast to the alpha/beta neurons (but as noted earlier for the atypical gamma neurons) there is clearly some relationship between this clonal organisation and the organisation out into the lobes (i.e. beyond the peduncle).
+
+Plot 2 groups at a time: 1+2
+```{r gamma_subclust.rgl3.13.1_2, custom.plot=TRUE, cache=TRUE}
+clear3d() 
+par3d(opgamma)
+plot3dfc(kcexemplars,lwd=.25, col='lightgrey',soma=T)
+plot3d(hcmbg3.13, k=4, groups=1:2, soma=TRUE)
+```
+
+Plot 3+4
+```{r gamma_subclust.rgl3.13.3_4, custom.plot=TRUE, cache=TRUE}
+clear3d() 
+par3d(opgamma)
+plot3dfc(kcexemplars,lwd=.25, col='lightgrey',soma=T)
+plot3d(hcmbg3.13, k=4, groups=3:4, soma=TRUE)
+```
+
+## Alpha'/Beta' subtypes
+
+Are there any subdivisions of alpha'/beta'?
+```{r apbp_subclust, fig.height=22.605/25.4*1.5, fig.width=34.925/25.4*1.5, cache=TRUE}
+hcmbapbp=hclustfc(subset(kcs,type=='apbp')$item)
+hcmbapbp$height=sqrt(hcmbapbp$height)
+hcmbapbpc=colour_clusters(hcmbapbp, k=4, groupLabels=c("i", "ii", "iii", "iv"))
+labels(hcmbapbpc)=NULL
+par(mar=c(0.5, 2, 0, 0), cex=0.7)
+plot(hcmbapbpc)
+abline(h=height_for_ngroups(hcmbapbp, k=4), lty='dashed')
+```
+
+4 subgroups look appropriate, so likely again that corresponds to the clonal organisation.
+
+Plot the 4 groups in dorsal view to see A/P lamination.
+```{r apbp_subclust.rgl, custom.plot=TRUE, cache=TRUE}
+clear3d()
+apbpopdorsal=structure(list(FOV = 0, userMatrix = structure(c(0.769862115383148, -0.57751727104187, 0.271637141704559, 0, 0.329294443130493, -0.00514626502990723, -0.944213151931763, 0, 0.546697378158569, 0.816362738609314, 0.186211511492729, 0, -7.93769133191743, -3.21716870471765, -2.27106285095215, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.556837737560272), .Names = c("FOV", "userMatrix", "scale", "zoom"))
+par3d(apbpopdorsal)
+plot3dfc(kcexemplars,lwd=.25,col='lightgrey',soma=T)
+plot3d(hcmbapbp, k=4, soma=TRUE)
+```
+
+There is evidence for very clear lobe/calyx coordination and some kind of lamination of the beta' lobe. For example the 1st and 3rd clones (numbered from lateral to medial, coloured purple and red) seem to project on the anterior medial lobe and the dorsal lobe. Likewise cyan and green project on the posterior lobes.
+
+Groups 1 and 4 seems to correspond to alpha'/beta' anterior subtype (or middle?) (Tanaka 2008) although from distinct neuroblast clones (1 medial, 2 lateral).
+
+Groups 2 and 3 terminate in the same region on the alpha' lobe and could be either alpha'/beta' medial or posterior subtypes. But again, there is a clear distinction in nb clones (2 medial, 4 lateral).
+
+## Alpha/Beta subtypes
+
+Finally, let's review the alpha/beta neurons. These clearly separate into neuroblast clusters, but is there anything else to see?
+
+Let's pick out the first alpha/beta cluster/clone to investigate further:
+```{r alphabeta_neurons_subtypes, fig.height=30/25.4*1.5, fig.width=71.737/25.4*1.5, cache=TRUE}
+hcmbab=hclustfc(subset(kcs, type=='ab')$item)
+hcmbab$height=sqrt(hcmbab$height)
+hcmbabc=colour_clusters(hcmbab, k=4, groupLabels=as.numeric)
+labels(hcmbabc)=NULL
+par(mar=c(0,2,0,0))
+plot(hcmbabc)
+abline(h=height_for_ngroups(hcmbab, k=4), lty='dashed')
+```
+
+Plot the 4 groups.
+```{r alphabeta_neurons_subtypes.rgl, cache=TRUE, custom.plot=TRUE}
+clear3d()
+alphabeta=structure(list(FOV = 0, userMatrix = structure(c(0.760397255420685, -0.089378222823143, 0.643278956413269, 0, 0.395794332027435, -0.721528589725494, -0.56810474395752, 0, 0.514920055866241, 0.686591565608978, -0.513273119926453, 0, -5.97493875052785, -1.43354184818441, 2.28123521804805, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.530321657657623), .Names = c("FOV", "userMatrix", "scale", "zoom"))
+par3d(alphabeta)
+plot3dfc(kcexemplars, lwd=.25,col='lightgrey',soma=T)
+plot3d(hcmbab, k=4, soma=TRUE)
+```
+
+And in aposterior view.
+```{r alphabeta_neurons_subtypes.posterior.rgl, cache=TRUE, custom.plot=TRUE}
+clear3d()
+alphabeta2=structure(list(FOV = 0, userMatrix = structure(c(-0.955179691314697, -0.0368916839361191, 0.293719381093979, 0, 0.050067413598299, -0.99804276227951, 0.0374641753733158, 0, 0.29176265001297, 0.0504909083247185, 0.955157160758972, 0, -0.53279098275016, 1.78975065693775, -5.96136951446533, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.530321657657623), .Names = c("FOV", "userMatrix", "scale", "zoom"))
+par3d(alphabeta2)
+plot3dfc(kcexemplars,lwd=.25,col='lightgrey',soma=T)
+plot3d(hcmbab, k=4, soma=TRUE)
+```
+
+And a peduncle slice.
+```{r preparing_alphabeta_neurons_subtypes.ped.rgl, eval=FALSE}
+s3dped=select3d()
+mbab=dps[labels(hcmbab)]
+mbabpeddb=nlapply(mbab,subset,s3dped)
+save(mbabpeddb, file="mbabpeddb.rda")
+```
+
+```{r alphabeta_neurons_subtypes.ped.rgl, cache=TRUE, custom.plot=TRUE}
+load_si_data("mbabpeddb.rda")
+clear3d()
+abped=structure(list(FOV = 0, userMatrix = structure(c(-0.901958584785461, 0.108084462583065, 0.418076783418655, 0, -0.0636429414153099, -0.990868389606476, 0.11886465549469, 0, 0.42710679769516, 0.0806033536791801, 0.900601208209991, 0, 0.966890145650542, -1.39563653308483, 1.30025506019592, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.58467960357666), .Names = c("FOV", "userMatrix", "scale", "zoom"))
+par3d(abped)
+plot3d(hcmbab, k=4, db=mbabpeddb)
+```
+
+Let's look at group 1.
+```{r ab_subclustg1, fig.height=22.605/25.4*1.5, fig.width=34.925/25.4*1.5, cache=TRUE}
+#collect and cluster first group. Divide into 4
+hcmbabg1=hclustfc(subset(hcmbab,k=4,groups=1))
+hcmbabg1$height=sqrt(hcmbabg1$height)
+hcmbabg1c=colour_clusters(hcmbabg1, k=2)
+labels(hcmbabg1c)=NULL
+par(mar=c(0,2,0,0))
+plot(hcmbabg1c)
+```
+
+Divide group 1 of alpha/beta into 2 groups.
+```{r ab_subclustg1.rgl, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(alphabeta)
+plot3dfc(kcexemplars,lwd=.25,col='lightgrey',soma=T)
+plot3d(hcmbabg1, k=2, soma=TRUE)
+```
+
+This clearly separates into core and peripheral neurons with distinct zones in the calyx that match the core vs peripheral classes in both lobes. From group to periphery: 1 (inner core?), 2 (outer core?), 3. Plot these same 3 groups in a more posterior view: matching group in core to posterior peduncle.
+```{r ab_subclustg1.oblique.rgl, custom.plot=TRUE, cache=TRUE}
+clear3d()
+obliquedorsal=structure(list(FOV = 0, userMatrix = structure(c(-0.746101021766663, 0.408808469772339, -0.525555849075317, 0, 0.0740801692008972, -0.733453392982483, -0.675690889358521, 0, -0.661698758602142, -0.5430668592453, 0.516945958137512, 0, -2.14033380762818, 0.288478787663758, 0.61934757232665, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1),     zoom = 0.530321657657623), .Names = c("FOV", "userMatrix", "scale", "zoom"))
+par3d(obliquedorsal)
+plot3dfc(kcexemplars,lwd=.25,col='lightgrey',soma=T)
+plot3d(hcmbabg1, k=2, soma=TRUE)
+```
+
+Plot a slice in dorsal view.
+```{r preparing_ab_subclustg1.dorsal.rgl, eval=FALSE}
+s3dlobe=select3d()
+abg1=dps[labels(hcmbabg1)]
+abg1db=nlapply(abg1,subset,s3dlobe)
+save(abg1db, file="abg1db.rda")
+```
+
+```{r ab_subclustg1.dorsal.rgl, custom.plot=TRUE, cache=TRUE}
+load_si_data("abg1db.rda")
+clear3d()
+dorsalvl=structure(list(FOV = 0, userMatrix = structure(c(0.917340934276581, -0.356077581644058, -0.178029298782349, 0, -0.0438270159065723, 0.354147255420685, -0.934162080287933, 0, 0.395682454109192, 0.864747583866119, 0.309268176555634, 0, 0.404987892261453, -0.297006159104314, 0.599182009696966, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1),     zoom = 0.613913536071777), .Names = c("FOV", "userMatrix", "scale", "zoom"))
+par3d(dorsalvl)
+plot3d(hcmbabg1, k=2, db=abg1db)
+```
+
+Looking at alpha/beta group 2.
+```{r ab_subclustg2.rgl, custom.plot=TRUE, cache=TRUE}
+hcmbabg2=hclustfc(subset(hcmbab,k=4,groups=2))
+hcmbabg2$height=sqrt(hcmbabg2$height)
+# cut into 3 groups
+hcmbabg2c=colour_clusters(hcmbabg2, k=2)
+labels(hcmbabg2c)=NULL
+par(mar=c(0,2,0,0))
+plot(hcmbabg2c)
+clear3d()
+par3d(alphabeta)
+plot3dfc(kcexemplars,lwd=.25,col='lightgrey',soma=T)
+plot3d(hcmbabg2, k=3, soma=TRUE)
+```
+
+For subtype groups 1 and 3 it also separates into core and peripheral neurons in the calyx and lobes. Group 2 is more heterogeneous, and it doesn't reach the tip of either lobe. It is the most peripheral in the peduncle and vertical lobe, posterior in the horizontal lobe, and innervates a dorsomedial region in the calyx- accessory calyx it seems.
+
+Plot groups 1 and 3.
+```{r ab_subclustg2.1_3.rgl, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(alphabeta)
+plot3dfc(kcexemplars,lwd=.25,col='lightgrey',soma=T)
+plot3d(hcmbabg2, k=3, groups=c(1,3), soma=TRUE)
+```
+
+Plot these same 2 groups in a more posterior view: matching group in core to posterior peduncle.
+```{r ab_subclustg2.oblique.rgl, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(obliquedorsal)
+plot3dfc(kcexemplars,lwd=.25,col='lightgrey',soma=T)
+plot3d(hcmbabg2, k=3,  groups=c(1,3), soma=TRUE)
+```
+
+Plot a slice in dorsal view of these groups:1+3.
+```{r preparing_ab_subclustg2.1_3.dorsal.rgl, eval=FALSE}
+mbabg2.13=subset(hcmbabg2, k=3, groups=c(1,3))
+s3d=select3d()
+abg2.13=dps[mbabg2.13]
+abg2.13db=nlapply(abg2.13,subset,s3d)
+save(abg2.13db, file="abg2.13db.rda")
+```
+
+```{r ab_subclustg2.1_3.dorsal.rgl, custom.plot=TRUE, cache=TRUE}
+load_si_data("abg2.13db.rda")
+clear3d()
+op=structure(list(FOV = 0, userMatrix = structure(c(0.917340934276581, -0.356077581644058, -0.178029298782349, 0, -0.0438270159065723, 0.354147255420685, -0.934162080287933, 0, 0.395682454109192, 0.864747583866119, 0.309268176555634, 0, -0.00433242384341873, 0.860298331553911, 0.599182009696986, 1), .Dim = c(4L, 4L)),     scale = c(1, 1, 1), zoom = 0.458111822605133), .Names = c("FOV", "userMatrix", "scale", "zoom"))
+par3d(op)
+plot3d(hcmbabg2, k=3, groups=c(1,3), db=abg2.13db)
+```
+
+Plot group 2: alpha/betap
+```{r ab_subclustg2.2.rgl, custom.plot=TRUE, cache=TRUE}
+clear3d()
+alphabeta4=structure(list(FOV = 0, userMatrix = structure(c(-0.540286600589752, 0.277229636907578, -0.794502735137939, 0, -0.252231538295746, -0.954111754894257, -0.161397501826286, 0, -0.802788496017456, 0.113197788596153, 0.585420072078705, 0, -0.327578342976186, -2.93453770033844, -5.71285343170166, 1), .Dim = c(4L, 4L)),     scale = c(1, 1, 1), zoom = 0.530321657657623), .Names = c("FOV", "userMatrix", "scale", "zoom"))
+par3d(alphabeta4)
+plot3dfc(kcexemplars,lwd=.25,col='lightgrey',soma=T)
+plot3d(hcmbabg2, k=3, groups=2, soma=TRUE)
+```
+
+Looking at alpha/beta group 3.
+```{r ab_subclustg3.rgl, custom.plot=TRUE, cache=TRUE}
+hcmbabg3=hclustfc(subset(hcmbab,k=4,groups=3))
+hcmbabg3$height=sqrt(hcmbabg3$height)
+# cut into 4 groups
+hcmbabg3c=colour_clusters(hcmbabg3, k=2)
+labels(hcmbabg3c)=NULL
+par(mar=c(0,2,0,0))
+plot(hcmbabg3c)
+clear3d()
+par3d(alphabeta)
+plot3dfc(kcexemplars,lwd=.25,col='lightgrey',soma=T)
+plot3d(hcmbabg3, k=2, soma=TRUE, col=c("cyan", "red"))
+```
+
+Subtype groups separate into core and peripheral neurons in the calyx and lobes. From periphery to core: 1 (alpha/beta surface), 2 ((alpha/beta core, outer core?), 3 (alpha/beta core, inner core?). Cell bodies mediodorsal.
+
+Plot these same 2 groups in a more posterior view: matching group in core to posterior peduncle.
+```{r ab_subclustg3.oblique.rgl, custom.plot=TRUE, cache=TRUE}
+clear3d()
+obliquedorsal2=structure(list(FOV = 0, userMatrix = structure(c(-0.481985986232758, 0.375682860612869, -0.79155033826828, 0, 0.00773541629314423, -0.901551961898804, -0.432601779699326, 0, -0.876144707202911, -0.214630842208862, 0.431629598140717, 0, 2.70110816722427, -10.9399192212566, 2.16332221031188, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1),     zoom = 0.458111822605133), .Names = c("FOV", "userMatrix", "scale", "zoom"))
+par3d(obliquedorsal2)
+plot3dfc(kcexemplars,lwd=.25,col='lightgrey',soma=T)
+plot3d(hcmbabg3, k=2, soma=TRUE, col=c("cyan", "red"))
+```
+
+Plot a slice in dorsal view.
+```{r preparing_ab_subclustg3.dorsal.rgl, eval=FALSE}
+s3d=select3d()
+abg3=dps[labels(hcmbabg3)]
+abg3db=nlapply(abg3,subset,s3d)
+save(abg3db, file="abg3db.rda")
+```
+
+```{r ab_subclustg3.dorsal.rgl, custom.plot=TRUE, cache=TRUE}
+load_si_data("abg3db.rda")
+clear3d()
+dorsalvl2=structure(list(FOV = 0, userMatrix = structure(c(0.86585795879364, -0.490310043096542, -0.0994304493069649, 0, 0.0208055526018143, 0.2338637560606, -0.972046911716461, 0, 0.49985733628273, 0.839585900306702, 0.212694123387337, 0, -0.453020713289913, 0.014614432136779, -4.35490942001344, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1),     zoom = 0.436296910047531), .Names = c("FOV", "userMatrix", "scale", "zoom"))
+par3d(dorsalvl2)
+plot3d(hcmbabg3, k=2, db=abg3db, col=c("cyan", "red"))
+```
+
+If dividing in 4 groups:
+```{r ab_subclustg3-1_3.rgl, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(alphabeta)
+plot3dfc(kcexemplars,lwd=.25,col='lightgrey',soma=T)
+plot3d(hcmbabg3, k=4, soma=TRUE, groups=1:3)
+```
+
+Group 4 innervates the same periphery/core level as group 2, bit its axons run along the posterior side of the lobes and pedunculus. They don't innervate the posterior tip region of the lobes, a characteristic of alpha/beta posterior neurons.
+ 
+```{r ab_subclustg3-4.rgl, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(alphabeta)
+plot3dfc(kcexemplars,lwd=.25,col='lightgrey',soma=T)
+plot3d(hcmbabg3, k=4, soma=TRUE, groups=4)
+```
+
+Looking at alpha/beta group 4. Divide into 2 groups.
+```{r ab_subclustg4.rgl, custom.plot=TRUE, cache=TRUE}
+hcmbabg4=hclustfc(subset(hcmbab,k=4, groups=4))
+hcmbabg4$height=sqrt(hcmbabg4$height)
+# cut into 3 groups
+hcmbabg4c=colour_clusters(hcmbabg4, k=2)
+labels(hcmbabg4c)=NULL
+par(mar=c(0,2,0,0))
+plot(hcmbabg4c)
+clear3d()
+par3d(alphabeta)
+plot3dfc(kcexemplars,lwd=.25,col='lightgrey',soma=T)
+plot3d(hcmbabg4, k=2, soma=TRUE,col=c("cyan", "red"))
+```
+
+Subtype groups 1, 2 and 3 separate into core and peripheral neurons in the calyx and lobes. From periphery to core: 1, 2, 3. Cell bodies are medial, with group 2 more ventral than the others.
+
+Plot these same 3 groups in a more posterior view: matching group in core to posterior peduncle.
+```{r ab_subclustg4.oblique.rgl, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(obliquedorsal)
+plot3dfc(kcexemplars,lwd=.25,col='lightgrey',soma=T)
+plot3d(hcmbabg4, k=2, soma=TRUE, col=c("cyan", "red"))
+```
+
+Plot a slice in dorsal view.
+```{r preparing_ab_subclustg4.dorsal.rgl, eval=FALSE}
+s3d=select3d()
+abg4=dps[labels(hcmbabg4)]
+abg4db=nlapply(abg4,subset,s3d)
+save(abg4db, file="abg4db.rda")
+```
+
+```{r ab_subclustg4.dorsal.rgl, custom.plot=TRUE, cache=TRUE}
+load_si_data("abg4db.rda")
+clear3d()
+dorsalvl3=structure(list(FOV = 0, userMatrix = structure(c(0.922714352607727, -0.352914303541183, -0.155080169439316, 0, -0.00472883507609367, 0.391906142234802, -0.919992983341217, 0, 0.385455250740051, 0.84962397813797, 0.35994878411293, 0, 2.32721664638431, -0.522492676689116, 0.715909183025381, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1),     zoom = 0.415520966053009), .Names = c("FOV", "userMatrix", "scale", "zoom"))
+par3d(dorsalvl3)
+plot3d(hcmbabg4, k=2, db=abg4db, col=c("cyan", "red"))
+```
