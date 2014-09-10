@@ -69,6 +69,7 @@ hook_rgl2<-function (before, options, envir) {
   if (before || rgl.cur() == 0)
     return()
   name = fig_path("", options)
+  if(!file.exists(dn<-dirname(name))) dir.create(dn, recursive = TRUE)
   par3d(windowRect = 100 + options$dpi * c(0, 0, options$fig.width,
                                            options$fig.height))
   if(!is.null(w<-options$rgl.wait)) Sys.sleep(w) else Sys.sleep(0.05)
