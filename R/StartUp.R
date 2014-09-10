@@ -3,8 +3,8 @@
 # set default all by all score matrix
 options('flycircuit.scoremat'="allbyallblastcv4.5")
 
-# load flycircuit package and make sure it is up to date
-if(!require("flycircuit") || packageVersion('flycircuit')<package_version('0.5.3') ){
+# check flycircuit package is installed and up to date
+if(!identical(try(packageVersion('flycircuit')>=package_version('0.5.3'), silent = TRUE), TRUE)){
   message("Installing/Updating packages!")
   # use rstudio CRAN repository if none set
   if(!interactive())
@@ -22,6 +22,7 @@ if(!require("flycircuit") || packageVersion('flycircuit')<package_version('0.5.3
 
 # Load core nat package
 library(nat)
+library(flycircuit)
 
 # Load fly circuit neurons
 if(!exists('dps'))
