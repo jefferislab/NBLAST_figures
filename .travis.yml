@@ -1,0 +1,23 @@
+language: c
+script: ./buildall.sh
+before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq haskell-platform
+  - cabal update
+  - sudo cabal install --global pandoc
+  - curl -OL http://raw.github.com/craigcitro/r-travis/master/scripts/travis-tool.sh
+  - chmod 755 ./travis-tool.sh
+  - ./travis-tool.sh bootstrap
+  - ./travis-tool.sh r_binary_install rgl
+  - ./travis-tool.sh install_github rstudio/rmarkdown
+  - bash <(wget -q -O- http://neuro.debian.net/_files/neurodebian-travis.sh)
+  - sudo apt-get install cmtk --no-install-recommends
+install:
+  - sh -e /etc/init.d/xvfb start
+notifications:
+  email:
+    on_success: change
+    on_failure: change
+env:
+  global:
+    - DISPLAY=:99.0
