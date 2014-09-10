@@ -1,0 +1,416 @@
+---
+title: "VPNNeuronClusters"
+output: html_document
+---
+
+Visual projection neurons fig
+==============================
+
+Showing unilateral and bilateral VPNs.
+```{r startup, echo=FALSE,message=FALSE,warning=FALSE}
+source("../../R/StartUp.R")
+source("../../R/DivideVPNsCentralBrain.R")
+opts_chunk$set(message=FALSE, fig.height=21.8/25.4, fig.width=36.334/25.4, dev='png', dpi=300,fig.path="figure/")
+
+knit_hooks$set(custom.plot = hook_rgl) #Needed to embed plots
+par3dmini=c("FOV", "userMatrix", "scale", "zoom")
+```
+
+```{r remote-score-matrix}
+VPN_score_mat <- load_si_data('VPN_score_mat.rds')
+options(flycircuit.scoremat=VPN_score_mat)
+```
+
+Hierarchical clustering for unilateral VPNS. Dividing into 21 groups.
+
+```{r HC_vpns, fig.width=119.344/25.4, fig.height=43.274/25.4, cache=TRUE}
+uvpnshc=hclustfc(uvpns)
+uvpnshc$height=sqrt(uvpnshc$height)
+uvpnshcc=colour_clusters(uvpnshc, k=21, groupLabels=as.roman)
+labels(uvpnshcc)=NULL
+par(mar=c(0,2,0,0), cex=0.5)
+plot(uvpnshcc)
+abline(h=height_for_ngroups(uvpnshc, k=21), lty='dashed')
+```
+
+Plot diagram of the neuropils used for overlap for unilateral VPNs.
+Central brain:
+```{r brain_neuropil_overlap_cb, custom.plot=TRUE, cache=TRUE}
+allneuropils=getRegionsFromSurf(FCWBNP.surf)
+notolr=setdiff(allneuropils, olr)
+cb=setdiff(allneuropils, c(olr, oll))
+nopen3d()
+#op=par3d(no.readonly=T)
+#dput(op[par3dmini])
+op=structure(list(FOV = 0, userMatrix = structure(c(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, -1, 0, 13.5767165082369, 0.468162672609679, 0, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.590388715267181), .Names = c("FOV", "userMatrix", "scale", "zoom"))
+par3d(op)
+plot3d(materials=cb, FCWBNP.surf, col="red", alpha=0.3)
+```
+
+Left optic lobe:
+```{r brain_neuropil_overlap_oll, custom.plot=TRUE, cache=TRUE}
+clear3d()
+opol=structure(list(FOV = 0, userMatrix = structure(c(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, -1, 0, 13.5767165082369, 0.468162672609679, 0, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.791177153587341), .Names = c("FOV", "userMatrix", "scale", "zoom"))
+par3d(opol)
+plot3d(materials=oll, FCWBNP.surf, col="blue", alpha=0.3)
+```
+
+Right optic lobe:
+```{r brain_neuropil_overlap_olr, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(opol)
+plot3d(materials=olr, FCWBNP.surf, col="magenta", alpha=0.3)
+```
+
+Looking at the voxel overlap for each group, to plot the neuropils that have the most overlap and terminal dendrites. For example for group 1.
+```{r calculating_neuropil_overlap, eval=FALSE}
+x=attr(dps, 'df')
+sort(colSums(x[subset(uvpnshc, k=21, groups=1), colnames(spatdist_jfrc)]), dec=T)
+which(sort(colSums(x[subset(uvpnshc, k=21, groups=1), colnames(spatdist_jfrc)]), dec=T) > 500)
+```
+
+Plot group 1. VPNs that innervate the lobula, AOTU, and PVLP. Dorsal cell bodies.
+```{r vpns_group1, custom.plot=TRUE, cache=TRUE}
+clear3d()
+op=structure(list(FOV = 0, userMatrix = structure(c(0.737214267253876, 0.401136428117752, 0.543694794178009, 0, 0.461759507656097, -0.886563241481781, 0.0279886201024055, 0, 0.493247210979462, 0.230422586202621, -0.838816404342651, 0, -6.9488433285465, 8.22875286386462, 0.944884777069068, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.765768885612488), .Names = c("FOV", "userMatrix", "scale", "zoom"))
+par3d(op)
+plot3d(uvpnshc, k=21, groups=1, soma=T)
+plot3d(FCWBNP.surf, "LO_L", alpha=0.3)
+plot3d(FCWBNP.surf, "AOTU_L", alpha=0.3)
+plot3d(FCWBNP.surf, "PVLP_L", alpha=0.3)
+```
+
+Plot group 2. VPNs that innervate the more medial lobula and AOTU (some neurons similar to group 1, innervating PVLP). Dorsal cell bodies.
+```{r vpns_group2, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(op)
+plot3d(uvpnshc, k=21, groups=2, soma=T)
+plot3d(FCWBNP.surf, "LO_L", alpha=0.3)
+plot3d(FCWBNP.surf, "AOTU_L", alpha=0.3)
+```
+
+Plot group 3. Very similar to group 2, but innervating the more lateral lobula. Cell bodies dorsal.
+```{r vpns_group3, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(op)
+plot3d(uvpnshc, k=21, groups=3, soma=T)
+plot3d(FCWBNP.surf, "LO_L", alpha=0.3)
+plot3d(FCWBNP.surf, "AOTU_L", alpha=0.3)
+```
+
+Bilateral VPNs
+------------------
+
+### Hierarchical clustering for bilateral VPNs
+
+Plot the bilateral VPNs: `r length(bilvpns)`
+```{r plot_bilvpns, custom.plot=TRUE, cache=TRUE}
+clear3d()
+op=structure(list(FOV = 0, userMatrix = structure(c(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.578812420368195), .Names = c("FOV", "userMatrix", "scale", "zoom"))
+par3d(op)
+plot3d(bilvpns, soma=T)
+```
+
+Hierarchical clustering.
+```{r HC_bilvpns,fig.width=104.181/25.4, fig.height=43.910/25.4, cache=TRUE,dpi=300}
+bilvpnshc=hclustfc(bilvpns)
+bilvpnshc$height=sqrt(bilvpnshc$height)
+bilvpnshcc=colour_clusters(bilvpnshc, k=8, groupLabels=LETTERS[1:8])
+labels(bilvpnshcc)=NULL
+par(mar=c(0,2,0,0), cex=0.7)
+plot(bilvpnshcc)
+abline(h=height_for_ngroups(bilvpnshc, k=8), lty='dashed')
+```
+
+### Plotting groups
+
+Plot group 1. BilVPNs that innervate the whole left lobula, medial right lobula, AVLP, PVLP, SPS, left PLP. Posterior cell bodies. All neurons belong to cluster 486.
+```{r bilvpns_group1, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(op)
+plot3d(bilvpnshc, k=8, groups=1, soma=T)
+plot3d(FCWBNP.surf, "LO_L", alpha=0.3)
+plot3d(FCWBNP.surf, "LO_R", alpha=0.3)
+plot3d(FCWBNP.surf, "AVLP_L", alpha=0.3)
+plot3d(FCWBNP.surf, "AVLP_R", alpha=0.3)
+plot3d(FCWBNP.surf, "PVLP_L", alpha=0.3)
+plot3d(FCWBNP.surf, "PVLP_R", alpha=0.3)
+plot3d(FCWBNP.surf, "PLP_L", alpha=0.3)
+plot3d(FCWBNP.surf, "SPS_L", alpha=0.3)
+plot3d(FCWBNP.surf, "SPS_R", alpha=0.3)
+```
+
+Plot group 2. BilVPNs that innervate the both the left and right dorsal lobula (one neurons extends into the medulla). Dorsal cell bodies. It matches the description of LC14 neurons.
+```{r bilvpns_group2, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(op)
+plot3d(bilvpnshc, k=8, groups=2, soma=T)
+plot3d(FCWBNP.surf, "LO_L", alpha=0.3)
+plot3d(FCWBNP.surf, "LO_R", alpha=0.3)
+```
+
+Plot group 3. BilVPNs that innervate both of the middle lobulas, and sparsely the right medulla. Dorsal cell bodies.
+```{r bilvpns_group3, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(op) 
+plot3d(bilvpnshc, k=8, groups=3, soma=T)
+plot3d(FCWBNP.surf, "LO_L", alpha=0.3)
+plot3d(FCWBNP.surf, "LO_R", alpha=0.3)
+plot3d(FCWBNP.surf, "ME_R", alpha=0.3)
+```
+
+Plot group 4. BilVPNs that innervate both the more inner medullas. Midline dorsal cell bodies.
+```{r bilvpns_group4, custom.plot=TRUE, cache=TRUE}
+clear3d()
+op2=structure(list(FOV = 0, userMatrix = structure(c(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.607753038406372), .Names = c("FOV", "userMatrix", "scale", "zoom"))
+par3d(op2) 
+plot3d(bilvpnshc, k=8, groups=4, soma=T)
+plot3d(FCWBNP.surf, "ME_L", alpha=0.3)
+plot3d(FCWBNP.surf, "ME_R", alpha=0.3)
+```
+
+Plot group 5. BilVPNs that innervate both the more inner medullas and the right lobula. On the left medulla, it innervates the same layers as group 3, but on the right medulla, it innervates a more inner layer. Dorsal VPN cell bodies. Follows a tract dorsal to group 3.
+```{r bilvpns_group5, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(op2) 
+plot3d(bilvpnshc, k=8, groups=5, soma=T)
+plot3d(FCWBNP.surf, "ME_L", alpha=0.3)
+plot3d(FCWBNP.surf, "ME_R", alpha=0.3)
+plot3d(FCWBNP.surf, "LO_R", alpha=0.3)
+```
+
+Plot group 6. BilVPNs (3 neurons) that innervate both lobula plates, following 2 different dorsal tracts.
+```{r bilvpns_group6, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(op2) 
+plot3d(bilvpnshc, k=8, groups=6, soma=T)
+plot3d(FCWBNP.surf, "LOP_L", alpha=0.3)
+plot3d(FCWBNP.surf, "LOP_R", alpha=0.3)
+```
+
+Plot group 7. BilVPNs that innervate the inner left medulla and the left and right posterior lobula. Some inervation near the midline, including IB, ICL, 
+```{r bilvpns_group7, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(op2)
+plot3d(bilvpnshc, k=8, groups=7, soma=T)
+plot3d(FCWBNP.surf, "ME_L", alpha=0.3)
+plot3d(FCWBNP.surf, "ME_R", alpha=0.3)
+plot3d(FCWBNP.surf, "LO_R", alpha=0.3)
+plot3d(FCWBNP.surf, "LO_L", alpha=0.3)
+plot3d(FCWBNP.surf, "ICL_L", alpha=0.3)
+plot3d(FCWBNP.surf, "IB_L", alpha=0.3)
+plot3d(FCWBNP.surf, "ICL_R", alpha=0.3)
+plot3d(FCWBNP.surf, "IB_R", alpha=0.3)
+plot3d(FCWBNP.surf, "GNG", alpha=0.3)
+plot3d(FCWBNP.surf, "IPS_R", alpha=0.3)
+plot3d(FCWBNP.surf, "IPS_L", alpha=0.3)
+```
+
+Plot group 8. Three outlier neurons: one just a dorsal tract, no innervation, OL to OL. The other innervates the dorsal left medulla and the ventral right medulla, and the third innervates the 2 medullas sparsely.
+```{r bilvpns_group8, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(op2) 
+plot3d(bilvpnshc, k=8, groups=8, soma=T)
+plot3d(FCWBNP.surf, "ME_L", alpha=0.3)
+plot3d(FCWBNP.surf, "ME_R", alpha=0.3)
+plot3d(FCWBNP.surf, "IB_R", alpha=0.3)
+plot3d(FCWBNP.surf, "IB_L", alpha=0.3)
+plot3d(FCWBNP.surf, "ICL_L", alpha=0.3)
+plot3d(FCWBNP.surf, "ICL_R", alpha=0.3)
+```
+
+Matching unilateral VPNs to know types
+-------------------------------
+
+### Matching neurons from groups 1, 2, 3: innervate the AOTU
+
+Take groups 1, 2 and 3 and cluster using a partial match, for neuron segments in AOTU and PVLP.
+```{r vpns_group1-3, custom.plot=TRUE, cache=TRUE}
+clear3d()
+op1=structure(list(FOV = 0, userMatrix = structure(c(0.879805266857147, 0.233710154891014, 0.413910984992981, 0, 0.272889673709869, -0.961323857307434, -0.0372509807348251, 0, 0.389196574687958, 0.14572562277317, -0.909554898738861, 0, -1.92284685527878, 10.2551837181003, 3.21964677141295e-15, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.658162117004395), .Names = c("FOV", "userMatrix", "scale", "zoom"))
+par3d(op1)
+plot3d(FCWBNP.surf,materials=c("PVLP_L","AOTU_L"),alpha=0.3)
+plot3d(uvpnshc, k=21, groups=1:3, soma=T)
+```
+
+Segment the neuron segments that overlap the neuropils: PVLP and AOTU.
+```{r calculate_segmenting_neurons_by_neuropil_aotu, cache=TRUE}
+JFRCtempate2010.mask130819_correct_voxelsize_downsampled2x2x2 <- load_si_data("JFRCtempate2010.mask130819_correct_voxelsize_downsampled2x2x2.nrrd")
+JFRCtempate2010.mask130819 <- load_si_data("JFRCtempate2010.mask130819.am")
+m2=read.im3d(JFRCtempate2010.mask130819_correct_voxelsize_downsampled2x2x2, ReadByteAsRaw=FALSE)
+h=read.im3d(JFRCtempate2010.mask130819, ReadData=F)
+mat=attr(h,'Parameters')$Materials
+indices2=match(c('PVLP_L', "AOTU_L"),names(mat))-1
+m2_aotu_pvlp=m2
+m2_aotu_pvlp[!m2_aotu_pvlp%in%indices2]=0
+mode(m2_aotu_pvlp)='logical'
+z3=ind2coord(m2_aotu_pvlp)
+z3=xform_brain(z3,sample=JFRC2,reference=FCWB)
+g123=subset(uvpnshc, k=21, groups=c(1, 2,3))
+#' return dotprops
+g123_aotu_pvlp=prune(dps[g123], z3,maxdist=2.5)
+s=slice(uvpnshc, k=21)
+ss=s[s%in%c(1,2,3)]
+```
+
+Plot neurons in segmented neuropils.
+```{r segmenting_neurons_by_neuropil_aotu, custom.plot=TRUE, cache=TRUE}
+clear3d()
+op=structure(list(FOV = 0, userMatrix = structure(c(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.810337364673615), .Names = c("FOV", "userMatrix", "scale", "zoom"))
+par3d(op)
+plot3d(g123_aotu_pvlp,col="black")
+plot3d(g123, col="lightgrey")
+```
+
+Generate new score matrix based on neuron segments in AOTU and PVLP.
+```{r prepare_new_scoring_matrix_aotu, eval=FALSE}
+scoremat.vpn_aotu=sapply(g123_aotu_pvlp,NeuriteBlast,target=g123_aotu_pvlp,NNDistFun=lodsby2dhist)
+save(scoremat.vpn_aotu, file="scoremat.vpn_aotu.rda")
+str(scoremat.vpn_aotu)
+image(scoremat.vpn_aotu)
+```
+
+```{r new_scoring_matrix_aotu, cache=TRUE}
+load_si_data("scoremat.vpn_aotu.rda")
+gn2=names(which(sapply(g123_aotu_pvlp,function(x) nrow(x$points))>5)) # exclude neurons with less than 5 points
+#image(scoremat.vpn_aotu[gn2,gn2])
+```
+
+Hierarchical clustering of these neurons with new score matrix. 
+
+There are differences in the innervation of the AOTU and PVLP between the different groups. Match these to Otsuna types.
+
+```{r HC_seg_in_aotu_pvlp, fig.width=81.012/25.4, fig.height=36.936/25.4, cache=TRUE}
+hc2=hclustfc(gn2,scoremat=scoremat.vpn_aotu[gn2,gn2])
+hc2$height=sqrt(hc2$height)
+hc2c=colour_clusters(hc2, k=7, groupLabels=as.numeric)
+labels(hc2c)=NULL
+par(mar=c(0,2,0,0), cex=0.7)
+plot(hc2c)
+abline(h=height_for_ngroups(hc2, k=7), lty='dashed')
+```
+
+Plot group 1.
+
+Group 1: corresponds to LC6, innervating the most lateral PVLP. Tract goes up to the AOTU and turns round, innervating the most lateral PVLP, entering via the anterior side. LO layers 2-6.
+```{r HC_seg_in_aotu_pvlp_g1, custom.plot=TRUE, cache=TRUE}
+clear3d()
+op=structure(list(FOV = 0, userMatrix = structure(c(0.879805266857147, 0.233710154891014, 0.413910984992981, 0, 0.272889673709869, -0.961323857307434, -0.0372509807348251, 0, 0.389196574687958, 0.14572562277317, -0.909554898738861, 0, -1.92284685527878, 10.2551837181003, 3.21964677141295e-15, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.800000011920929), .Names = c("FOV", "userMatrix", "scale", "zoom"))
+par3d(op)
+plot3d(FCWBNP.surf,materials=c("PVLP_L","AOTU_L"),alpha=0.3)
+plot3d(hc2,k=7,soma=T,groups=1)
+# (subset(hc2,k=7,soma=T,groups=1))[1] # representative neuron of group 2.1 (for panels C)
+# [1] "ChaMARCM-F000504_seg001"
+```
+
+Plot group 2.
+
+Group 2: corresponds to LC9, innervating the medial PVLP. Follows the same tract as LC6, but terminates in the medial PVLP. LO layers 2-6.
+```{r HC_seg_in_aotu_pvlp_g2, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(op)
+plot3d(FCWBNP.surf,materials=c("PVLP_L","AOTU_L"),alpha=0.3)
+plot3d(hc2,k=7,soma=T,groups=2)
+# (subset(hc2,k=7,soma=T,groups=2))[1] # representative neuron of group 2.2
+# [1] "ChaMARCM-F000672_seg002"
+```
+
+Plot groups 1 and 2.
+```{r HC_seg_in_aotu_pvlp_g1-2, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(op)
+plot3d(FCWBNP.surf,materials=c("PVLP_L","AOTU_L"),alpha=0.3)
+plot3d(hc2,k=7,soma=T,groups=1:2)
+```
+
+Plot groups 1 and 2 in oblique view to show A/P lamination in lobula.
+```{r HC_seg_in_aotu_pvlp_g1-2_lateral, custom.plot=TRUE, cache=TRUE}
+clear3d()
+oplateral=structure(list(FOV = 0, userMatrix = structure(c(0.38068950176239, 0.14758512377739, 0.9128497838974, 0, -0.9105224609375, -0.112395092844963, 0.397890865802765, 0, 0.161322593688965, -0.982642412185669, 0.0915916338562965, 0, 13.3996251370602, -8.37014037798566, 5.6818447113037, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.429739475250244), .Names = c("FOV", "userMatrix", "scale", "zoom"))
+par3d(oplateral)
+plot3d(FCWBNP.surf,materials=c("PVLP_L","AOTU_L"),alpha=0.3)
+plot3d(hc2,k=7,soma=T,groups=1:2)
+```
+
+Plot groups 2 and 3. See below for matching of group 3.
+```{r HC_seg_in_aotu_pvlp_g2-3, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(op)
+plot3d(FCWBNP.surf,materials=c("PVLP_L","AOTU_L"),alpha=0.3)
+plot3d(hc2,k=7,soma=T,groups=2:3)
+# (subset(hc2,k=7,soma=T,groups=3))[1] # representative neuron of group 2.3
+# [1] "GadMARCM-F000369_seg001"
+```
+
+Plot groups 3 and 4.
+
+Groups 3 and 4: corresponds to LC10B, innervating the dorsal AOTU. 
+```{r HC_seg_in_aotu_pvlp_g3-4, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(op)
+plot3d(FCWBNP.surf,materials="AOTU_L",alpha=0.3)
+plot3d(hc2,k=7,soma=T,groups=3:4)
+# (subset(hc2,k=7,soma=T,groups=4))[1] # representative neuron of group 2.4
+# [1] "ChaMARCM-F000018_seg001"
+```
+
+Plot groups 3 and 4 in lateral view to show lobula lamination.
+```{r HC_seg_in_aotu_pvlp_g3-4_lateral, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(oplateral)
+plot3d(FCWBNP.surf,materials="AOTU_L",alpha=0.3)
+plot3d(hc2,k=7,soma=T,groups=3:4)
+```
+
+Plot group 6.
+
+Group 6: corresponds to LC10A. Follows the ventral AOTU, bypassing optu2 and then turns dorsally. It is quite different to groups 3-5 and 7 in the lobula innervation, although this is not mentioned in Otsuna. LC10 LO layers 2-6
+```{r HC_seg_in_aotu_pvlp_g6, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(op)
+plot3d(FCWBNP.surf,materials="AOTU_L",alpha=0.3)
+plot3d(hc2,k=7,soma=T,groups=6)
+# (subset(hc2,k=7,soma=T,groups=6))[3] # representative neuron of group 2.6
+# [1] "GadMARCM-F000527_seg002"
+```
+
+Plot groups 5 and 7.
+
+Groups 5 and 7: correspond to LC10, but they do not match an Otsuna subtype. They do not match LC10B (dorsal AOTU), LC10A (ventral and dorsal turn) or LC10C (short, finishing at the more lateral region of the AOTU, optu3). They are similar to LC10B although they innervate the ventral AOTU. 
+```{r HC_seg_in_aotu_pvlp_g5-7, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(op)
+plot3d(FCWBNP.surf,materials="AOTU_L",alpha=0.3)
+plot3d(hc2,k=7,soma=T,groups=c(5,7))
+# (subset(hc2,k=7,soma=T,groups=5))[1] # representative neuron of group 2.5
+# [1] "ChaMARCM-F001298_seg001"
+# (subset(hc2,k=7,soma=T,groups=7))[4] # representative neuron of group 2.7
+# [1] "ChaMARCM-F000884_seg001"
+```
+
+Plot groups 5 and 7 in lateral view to show lobula lamination.
+```{r HC_seg_in_aotu_pvlp_g5-7_lateral, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(oplateral)
+plot3d(FCWBNP.surf,materials="AOTU_L",alpha=0.3)
+plot3d(hc2,k=7,soma=T,groups=c(5,7))
+```
+
+Plot groups 3, 4, 5 and 7.
+
+The 4 groups follow distinct layers in the lobula and AOT tract and it seems that each group innervates a different LO layer (for LC10 LO layers 2-6). Their innervation in the AOTU reflects their position in the lobula. In the AOTU, from most ventral: 5, 7, 3, 4. In the lobula, from most posterior: 5, 7, 3, 4.
+
+```{r HC_seg_in_aotu_pvlp_g3:5-7, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(op)
+plot3d(FCWBNP.surf,materials="AOTU_L",alpha=0.3)
+plot3d(hc2,k=7,soma=T,groups=c(3:5,7))
+```
+
+Plot groups 3, 4, 5 and 7 in lateral view to show lobula lamination.
+```{r HC_seg_in_aotu_pvlp_g3:5-7_lateral, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(oplateral)
+plot3d(FCWBNP.surf,materials="AOTU_L",alpha=0.3)
+plot3d(hc2,k=7,soma=T,groups=c(3:5,7))
+```
