@@ -1,7 +1,0 @@
-if(!require(devtools)) install.packages('devtools')
-devtools::install_github("jefferis/nat")
-devtools::install_github("jefferislab/nat.nblast", ref="spam")
-devtools::install_github(c("nat.templatebrains","nat.flybrains"), username="jefferislab")
-devtools::install_github("jefferis/flycircuit")
-devtools::install_github("yihui/knitr")
-install.packages(c('doMC', 'dendroextras', 'rgl', 'ggplot2', 'spam'))
