@@ -1,3 +1,6 @@
 .Rproj.user
 .Rhistory
 .RData
+fig/*/*_cache
+fig/*/figure
+*.md
