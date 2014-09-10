@@ -1,0 +1,407 @@
+---
+title: "Affinity propagation clustering analysis"
+output: html_document
+---
+
+APClustering fig
+==============================
+
+Panels for cluster statistics and hierarchical clustering of exemplars, focusing on central brain and some other examples.
+
+```{r startup, echo=FALSE,message=FALSE, warning=FALSE}
+source("../../R/StartUp.R")
+source("../../R/DivideVPNsCentralBrain.R")
+opts_chunk$set(message=FALSE, fig.height=21.8/25.4, fig.width=36.334/25.4, dpi=300, dev='png', fig.path="figure/")
+knit_hooks$set(custom.plot = hook_rgl) #Needed to embed plots
+par3dmini=c("FOV", "userMatrix", "scale", "zoom")
+nopen3d()
+```
+
+```{r remote-score-matrix}
+# This score matrix is loaded in DivideVPNsCentralBrain.R
+options(flycircuit.scoremat=AP_score_mat)
+```
+
+Use affinity propagaton to cluster the Flycircuit neurons.
+
+Plot mean cluster score vs cluster size.
+```{r ClusterSizeVsScore, fig.width=78.151/25.4*5, fig.height=46.363/25.4*5, cache=TRUE}
+csize=table(as.integer(clusterp0$exemplar))
+
+clustersim<-function(gns,summaryfun=mean){
+     if(length(gns)==1) return(NA)
+      summaryfun=match.fun(summaryfun)
+      dmat=fc_nblast(gns,gns,normalisation="mean")
+      dmat[upper.tri(dmat)]
+      summaryfun(dmat)
+   }
+mcsim=by(clusterp0$item,clusterp0$exemplar,clustersim)
+summary(mcsim)
+clstats=qplot(as.vector(mcsim),as.vector(csize), size=I(8), alpha=I(0.3), xlab="Mean cluster score", ylab="Cluster size  (log)")+scale_y_sqrt()+ theme(axis.text.x=element_text(size=22), axis.text.y=element_text(size=22), axis.title.x=element_text(size=26), axis.title.y=element_text(size=26))
+par(mar=c(0,2,0,0))
+plot(clstats)
+```
+
+The 5 clusters (exemplars) with the lower mean similarity are:
+```{r low_sim_clusters}
+mcsim[names(which(mcsim<0.25))]
+```
+
+Plot all exemplars.
+```{r AllExemplars, custom.plot=TRUE, fig.width=16.923/25.4, fig.height=10.231/25.4, cache=TRUE}
+ex=names(apres16k.p0@exemplars)
+plot3d(FCWB)
+op=structure(list(FOV = 0, userMatrix = structure(c(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.52093118429184), .Names = c("FOV", "userMatrix", "scale", "zoom"))
+par3d(op)
+plot3d(ex)
+```
+
+To improve distinction of major neuronal subtypes obtained in the dendrogram groups, we'll do the hierarchical clustering in only the central brain neurons, removing all optic lobe ones.
+
+Dividing between central brain neurons (cb neurons) and optic lobe ones, k=3: 
+```{r HC_of_exemplars_3groups, fig.width=140.033/25.4*1.5, fig.height=36.783/25.4*1.5, cache=TRUE}
+par(mar=c(0,2,0,0))
+plot(exemhcd)
+abline(h=height_for_ngroups(exemhc, k=3), lty='dashed')
+```
+
+Plot group 1.
+```{r cb_exgroups1, custom.plot=TRUE, fig.width=16.923/25.4, fig.height=10.231/25.4, cache=TRUE}
+clear3d()
+plot3d(FCWB)
+par3d(op)
+plot3d(subset(exemhc, k=3, groups=1), soma=T, col="red")
+```
+
+Plot group 2.
+```{r cb_exgroups2, custom.plot=TRUE, fig.width=16.923/25.4, fig.height=10.231/25.4, cache=TRUE}
+clear3d()
+plot3d(FCWB)
+par3d(op)
+plot3d(subset(exemhc, k=3, groups=2), soma=T, col="green")
+```
+
+Plot group 3.
+```{r cb_exgroups3, custom.plot=TRUE, fig.width=16.923/25.4, fig.height=10.231/25.4, cache=TRUE}
+clear3d()
+plot3d(FCWB)
+par3d(op)
+plot3d(subset(exemhc, k=3, groups=3), soma=T, col="blue")
+```
+
+Central brain neurons are in groups 2 and 3.
+
+From central brain group, there only a few exemplars in OL that still need to be removed.
+```{r removing_central_brain_strays, custom.plot=TRUE, cache=TRUE}
+clear3d()
+plot3d(FCWB)
+par3d(op)
+plot3d(olextra, soma=T)
+```
+
+The central brain exemplars that will be used from here on. 
+
+There are `r length(excb)` exemplars corresponding to `r length(subset(clusterp0, exemplar%in%excb)$item)` neurons.
+```{r final_cb_ex, custom.plot=TRUE, fig.width=30.6144/25.4, fig.height=18.344/25.4, cache=TRUE}
+cbg2=setdiff(subset(exemhc, k=3, groups=2), olextra)
+cbg3=setdiff(subset(exemhc, k=3, groups=3), olextra)
+clear3d()
+plot3d(FCWB)
+par3d(op)
+plot3d(cbg2, soma=T, col='green')
+plot3d(cbg3, soma=T, col='blue')
+```
+
+Organise these central brain exemplars by hierarchical clustering.
+
+Looking at dendrogram, divided it at h=3. This resulted in similar groups to using all neurons and cutting at h=3 (24 groups). Also tried cutting further, at h=2.5 (19 groups).
+
+But changed cutting level to get large superclasses, using k=14.
+```{r HC_cbex, fig.width=181.681/25.4*1.5, fig.height=47.839/25.4*1.5, cache=TRUE}
+excbhc=hclustfc(excb)
+excbhc$height=sqrt(excbhc$height)
+excbhch=colour_clusters(excbhc, k=14, groupLabels=as.roman)
+labels(excbhch)=NULL
+par(mar=c(0,2,0,0))
+plot(excbhch)
+abline(h=height_for_ngroups(excbhc, k=14), lty='dashed')
+```
+
+Group 1: Central complex group.
+```{r cbex_group1, custom.plot=TRUE, cache=TRUE}
+clear3d()
+plot3d(FCWB)
+par3d(op)
+plot3dfc(subset(excbhc, k=14, group=1), col=rainbow(14)[1], soma=T)
+```
+
+Group 2: P1 neurons.
+```{r cbex_group2, custom.plot=TRUE, cache=TRUE}
+clear3d()
+plot3d(FCWB)
+par3d(op)
+plot3dfc(subset(excbhc, k=14, group=2), col=rainbow(14)[2], soma=T)
+```
+
+Group 3: SMP, SIP.
+```{r cbex_group3, custom.plot=TRUE, cache=TRUE}
+clear3d()
+plot3d(FCWB)
+par3d(op)
+plot3dfc(subset(excbhc, k=14, group=3), col=rainbow(14)[3], soma=T)
+```
+
+Group 4: Mushroom body (gamma, alpha'/beta').
+```{r cbex_group4, custom.plot=TRUE, cache=TRUE}
+clear3d()
+plot3d(FCWB)
+par3d(op)
+plot3dfc(subset(excbhc, k=14, group=4), col=rainbow(14)[4], soma=T)
+```
+
+Group 5: Mushroom body (alpha/beta).
+```{r cbex_group5, custom.plot=TRUE, cache=TRUE}
+clear3d()
+plot3d(FCWB)
+par3d(op)
+plot3dfc(subset(excbhc, k=14, group=5), col=rainbow(14)[5], soma=T)
+```
+
+Group 6: Ventral protocerebrum and SEZ.
+```{r cbex_group6, custom.plot=TRUE, cache=TRUE}
+clear3d()
+plot3d(FCWB)
+par3d(op)
+plot3dfc(subset(excbhc, k=14, group=6), col=rainbow(14)[6], soma=T)
+```
+
+Group 7: Ventral protocerebrum.
+```{r cbex_group7, custom.plot=TRUE, cache=TRUE}
+clear3d()
+plot3d(FCWB)
+par3d(op)
+plot3dfc(subset(excbhc, k=14, group=7), col=rainbow(14)[7], soma=T)
+```
+
+Group 8: Saddle and wedge.
+```{r cbex_group8, custom.plot=TRUE, cache=TRUE}
+clear3d()
+plot3d(FCWB)
+par3d(op)
+plot3dfc(subset(excbhc, k=14, group=8), col=rainbow(14)[8], soma=T)
+```
+
+Group 9: Mix of neurons, octopaminergic neuron.
+```{r cbex_group9, custom.plot=TRUE, cache=TRUE}
+clear3d()
+plot3d(FCWB)
+par3d(op)
+plot3dfc(subset(excbhc, k=14, group=9), col=rainbow(14)[9], soma=T)
+```
+
+Group 10: Midline bilateral and SEZ.
+```{r cbex_group10, custom.plot=TRUE, cache=TRUE}
+clear3d()
+plot3d(FCWB)
+par3d(op)
+plot3dfc(subset(excbhc, k=14, group=10), col=rainbow(14)[10], soma=T)
+```
+
+Group 11: uPNs.
+```{r cbex_group11, custom.plot=TRUE, cache=TRUE}
+clear3d()
+plot3d(FCWB)
+par3d(op)
+plot3dfc(subset(excbhc, k=14, group=11), col=rainbow(14)[11], soma=T)
+```
+
+Group 12: local PN's, 1 uPN, LAL neurons.
+```{r cbex_group12, custom.plot=TRUE, cache=TRUE}
+clear3d()
+plot3d(FCWB)
+par3d(op)
+plot3dfc(subset(excbhc, k=14, group=12), col=rainbow(14)[12], soma=T)
+```
+
+Group 13: SLP and LH.
+```{r cbex_group13, custom.plot=TRUE, cache=TRUE}
+clear3d()
+plot3d(FCWB)
+par3d(op)
+plot3dfc(subset(excbhc, k=14, group=13), col=rainbow(14)[13], soma=T)
+```
+
+Group 14: VLP neurons.
+```{r cbex_group14, custom.plot=TRUE, cache=TRUE}
+clear3d()
+plot3d(FCWB)
+par3d(op)
+plot3dfc(subset(excbhc, k=14, group=14), col=rainbow(14)[14], soma=T)
+```
+
+Add example panels for VPNs
+---------------
+
+Adding a couple of panels in supercluster fig to show separation of VPNs. 
+
+Using hierarchical clustering from unilateral VPN clusters: LC10B neurons, and LC4.
+
+
+### First panel:group 3, representing LC10B
+
+Collect neurons from groups 3 and 4 in VPNs (LC10B, figure 5B). 
+```{r vpns_LC10B}
+# dput(subset(hc2,k=7,groups=3:4))
+g3_4aotu=c("GadMARCM-F000369_seg001", "ChaMARCM-F000333_seg001", "FruMARCM-M002517_seg001", 
+"ChaMARCM-F000887_seg002", "ChaMARCM-F001451_seg002", "ChaMARCM-F000700_seg003", 
+"FruMARCM-M002548_seg001", "FruMARCM-F000718_seg001", "FruMARCM-M000040_seg001", 
+"ChaMARCM-F001149_seg001", "ChaMARCM-F000668_seg002", "FruMARCM-M001848_seg001", 
+"FruMARCM-F000366_seg001", "ChaMARCM-F000340_seg001", "FruMARCM-F000577_seg002", 
+"FruMARCM-M001983_seg001", "ChaMARCM-F001206_seg001", "ChaMARCM-F000314_seg001", 
+"ChaMARCM-F000892_seg001", "FruMARCM-M001516_seg001", "ChaMARCM-F001367_seg001", 
+"FruMARCM-M000861_seg001", "FruMARCM-F000688_seg002", "GadMARCM-F000310_seg002", 
+"ChaMARCM-F000204_seg002", "ChaMARCM-F001531_seg001", "FruMARCM-M001360_seg001", 
+"FruMARCM-M000635_seg001", "ChaMARCM-F000686_seg002", "FruMARCM-M002573_seg003", 
+"ChaMARCM-F000272_seg001", "ChaMARCM-F000367_seg001", "ChaMARCM-F000329_seg001", 
+"FruMARCM-F001272_seg001", "FruMARCM-F000555_seg002", "FruMARCM-F000569_seg001", 
+"FruMARCM-F000560_seg001", "FruMARCM-M000114_seg001", "ChaMARCM-F000018_seg001", 
+"ChaMARCM-F000450_seg002", "ChaMARCM-F000960_seg001", "FruMARCM-F001140_seg001", 
+"FruMARCM-F001607_seg001", "ChaMARCM-F001136_seg001", "GadMARCM-F000673_seg002", 
+"ChaMARCM-F001189_seg001", "FruMARCM-F002104_seg001", "FruMARCM-F001510_seg001", 
+"ChaMARCM-F000449_seg003", "ChaMARCM-F001214_seg001", "FruMARCM-F002341_seg001", 
+"FruMARCM-M002031_seg001", "FruMARCM-F001534_seg001", "FruMARCM-F000078_seg001", 
+"FruMARCM-F000717_seg001", "FruMARCM-F002190_seg001", "ChaMARCM-F000410_seg001", 
+"FruMARCM-F002355_seg001", "FruMARCM-F000489_seg001", "FruMARCM-M001553_seg002", 
+"FruMARCM-M002520_seg001", "FruMARCM-M002019_seg001", "FruMARCM-M002411_seg001", 
+"FruMARCM-F002070_seg001", "ChaMARCM-F000334_seg001", "ChaMARCM-F000559_seg001", 
+"FruMARCM-F002149_seg002", "FruMARCM-F001643_seg001", "FruMARCM-F002340_seg001", 
+"FruMARCM-F001622_seg001", "FruMARCM-M001691_seg002", "FruMARCM-F000751_seg001", 
+"FruMARCM-F001645_seg002", "FruMARCM-M002508_seg002", "FruMARCM-M001438_seg002", 
+"FruMARCM-F000511_seg001", "FruMARCM-F000791_seg001", "FruMARCM-M000349_seg004", 
+"FruMARCM-M000534_seg001", "FruMARCM-M000871_seg001", "FruMARCM-M000885_seg001", 
+"FruMARCM-M002053_seg001", "FruMARCM-M000643_seg002", "npfMARCM-F000007_seg001", 
+"ChaMARCM-F000561_seg002", "FruMARCM-F002050_seg001")
+```
+
+Find the corresponding clusters and plot the exemplars.
+```{r vpns_LC10B-clexonly, custom.plot=TRUE, cache=TRUE}
+g3_4aotucl=subset(clusterp0, item%in%g3_4aotu)$cluster
+clear3d()
+op=structure(list(FOV = 0, userMatrix = structure(c(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.816845893859863), .Names = c("FOV", "userMatrix", "scale", "zoom"))
+par3d(op)
+plot3d(apres16k.p0, plot="ex", clusters=g3_4aotucl, soma=T)
+drawRegionSurf("AOTU_L", FCWBNP.surf, alpha=0.3)
+```
+
+It corresponds to `r length(unique(g3_4aotucl))` different clusters, and `r length(subset(clusterp0, cluster%in%unique(g3_4aotucl))$item)`, neurons. 
+
+Plot all neurons. There are differences in AOTU and lobula lamination.
+
+```{r vpns_LC10B-clall, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(op)
+plot3d(apres16k.p0, plot="all", clusters=unique(g3_4aotucl), soma=T)
+```
+
+### Second panel: group C, representing LC4. 
+
+Collect neurons from group C in VPNs (LC4, figure S4B). 
+```{r vpns_LC4}
+# dput(subset(hc,k=7,groups=3))
+gcpvlp=c("DvGlutMARCM-F004472_seg001", "DvGlutMARCM-F003871_seg001", 
+"DvGlutMARCM-F003801_seg001", "ChaMARCM-F001546_seg001", "ChaMARCM-F000737_seg001", 
+"DvGlutMARCM-F1355_seg1", "DvGlutMARCM-F1293_seg1", "DvGlutMARCM-F002969_seg001", 
+"DvGlutMARCM-F003234_seg001", "DvGlutMARCM-F002799_seg001", "DvGlutMARCM-F1528_seg1", 
+"DvGlutMARCM-F1336_seg1", "DvGlutMARCM-F559-X3_seg2", "DvGlutMARCM-F003874_seg001", 
+"DvGlutMARCM-F004340_seg001", "DvGlutMARCM-F003147_seg001", "DvGlutMARCM-F1269_seg1", 
+"DvGlutMARCM-F004446_seg001", "DvGlutMARCM-F004061_seg001", "DvGlutMARCM-F002401_seg002", 
+"DvGlutMARCM-F004570_seg001", "DvGlutMARCM-F003718_seg001", "DvGlutMARCM-F003772_seg001", 
+"DvGlutMARCM-F050_seg1", "DvGlutMARCM-F2197_seg1", "ChaMARCM-F000394_seg001", 
+"ChaMARCM-F001502_seg002", "GadMARCM-F000401_seg003", "DvGlutMARCM-F756_seg1", 
+"ChaMARCM-F000586_seg001", "DvGlutMARCM-F004592_seg002", "DvGlutMARCM-F002754_seg001", 
+"DvGlutMARCM-F003885_seg001", "ChaMARCM-F001399_seg001", "DvGlutMARCM-F1254_seg1", 
+"GadMARCM-F000524_seg001", "DvGlutMARCM-F003628_seg001", "DvGlutMARCM-F2088_seg1", 
+"ChaMARCM-F001108_seg001", "DvGlutMARCM-F003021_seg002", "GadMARCM-F000649_seg001", 
+"DvGlutMARCM-F1949_seg1", "DvGlutMARCM-F1038_seg1", "DvGlutMARCM-F454_seg1", 
+"DvGlutMARCM-F002872_seg001", "ChaMARCM-F000721_seg001", "ChaMARCM-F001212_seg001", 
+"DvGlutMARCM-F003104_seg001", "ChaMARCM-F001457_seg001", "DvGlutMARCM-F002625_seg001", 
+"ChaMARCM-F000417_seg001", "DvGlutMARCM-F1116_seg1", "DvGlutMARCM-F003304_seg002", 
+"DvGlutMARCM-F1333_seg1")
+```
+
+Find the corresponding clusters and plot the exemplars.
+```{r vpns_LC4-clexonly, custom.plot=TRUE, cache=TRUE}
+gcpvlpcl=subset(clusterp0, item%in%gcpvlp)$cluster
+clear3d()
+op2=structure(list(FOV = 0, userMatrix = structure(c(1, 0, 0, 0, 
+0, -1, 0, 0, 0, 0, -1, 0, -11.4635500555421, -0.745612625663597, 
+0, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.777948498725891), .Names = c("FOV", 
+"userMatrix", "scale", "zoom"))
+par3d(op2)
+plot3d(apres16k.p0, plot="ex", clusters=unique(gcpvlpcl), soma=T)
+drawRegionSurf("PVLP_L", FCWBNP.surf, alpha=0.3)
+drawRegionSurf("PLP_L", FCWBNP.surf, alpha=0.3)
+```
+
+It corresponds to `r length(unique(gcpvlpcl))` different clusters, `r length(subset(clusterp0, cluster%in%unique(gcpvlpcl))$item)` neurons. Plot all neurons.
+```{r vpns_LC4-clexall, custom.plot=TRUE, cache=TRUE}
+clear3d()
+op3=structure(list(FOV = 0, userMatrix = structure(c(0.999868869781494, 
+0.00186994869727641, -0.016085110604763, 0, 0.00180982786696404, 
+-0.999991297721863, -0.00375140830874443, 0, -0.016091987490654, 
+0.0037218052893877, -0.999863564968109, 0, -15.4872700977799, 
+-0.625269142305341, 0.245943263173103, 1), .Dim = c(4L, 4L)), 
+    scale = c(1, 1, 1), zoom = 0.526546359062195), .Names = c("FOV", 
+"userMatrix", "scale", "zoom"))
+par3d(op3)
+plot3d(apres16k.p0, plot="all", clusters=unique(gcpvlpcl), soma=T)
+```
+
+Add panels of auditory neurons AMMC-IVLP PN1
+---------------------------------------------
+From the matching to Lai et al. (2012) in the figure on Auditory Neuron types, find which clusters correspond to AMMC-IVLP PN1.
+
+```{r collect_AMMCIVLPPN1_neurons, cache=TRUE}
+ammcivlppn1=
+ c("FruMARCM-M001361_seg001", "TPHMARCM-1012M_seg1", "TPHMARCM-M001551_seg003", 
+ "TPHMARCM-863M_seg1", "TPHMARCM-102M_seg1", "TPHMARCM-183M_seg1", 
+ "TPHMARCM-191M_seg1", "TPHMARCM-456M_seg1", "TPHMARCM-660M_seg2", 
+ "TPHMARCM-773M_seg1", "FruMARCM-F001027_seg002", "DvGlutMARCM-F003336_seg001", 
+ "DvGlutMARCM-F003157_seg001", "FruMARCM-F000272_seg001", "TPHMARCM-1178F_seg1", 
+ "TPHMARCM-1195F_seg1", "TPHMARCM-1213F_seg1", "TPHMARCM-1271F_seg1", 
+ "TPHMARCM-1274F_seg1", "TPHMARCM-1283F_seg1", "TPHMARCM-722F_seg1", 
+ "TPHMARCM-783F_seg1", "TPHMARCM-800F_seg1", "TPHMARCM-440F_seg1", 
+ "TPHMARCM-579F_seg1", "TPHMARCM-691F_seg1", "TPHMARCM-M001633_seg002", 
+ "TPHMARCM-1316M_seg1", "TPHMARCM-M001357_seg001", "TPHMARCM-M001364_seg001", 
+ "TPHMARCM-M001521_seg001", "TPHMARCM-533M_seg1", "TPHMARCM-560M_seg1", 
+ "TPHMARCM-804M_seg1", "TPHMARCM-1197F_seg1", "TPHMARCM-1206F_seg1", 
+ "TPHMARCM-1229F_seg1", "TPHMARCM-1234F_seg1", "TPHMARCM-1239F_seg1", 
+ "TPHMARCM-1252F_seg1", "TPHMARCM-1275F_seg1", "TPHMARCM-880F_seg1", 
+ "TPHMARCM-709F_seg1", "TPHMARCM-746F_seg1", "TPHMARCM-763F_seg1", 
+ "TPHMARCM-780F_seg1", "TPHMARCM-054F_seg1", "TPHMARCM-209F_seg1", 
+ "TPHMARCM-594F_seg1", "TPHMARCM-649F_seg2", "DvGlutMARCM-F1538_seg1", 
+ "TPHMARCM-M001578_seg001", "TPHMARCM-M001611_seg001", "TPHMARCM-M001694_seg001", 
+ "TPHMARCM-1044M_seg1", "TPHMARCM-1048M_seg1", "TPHMARCM-1106M_seg1", 
+ "TPHMARCM-606M_seg1", "GadMARCM-F000648_seg001", "TPHMARCM-737F_seg1", 
+ "TPHMARCM-614F_seg1", "DvGlutMARCM-F1498_seg1", "DvGlutMARCM-F1651_seg1"
+ )
+```
+
+Collect the clusters that correspond to AMMC-IVLP PN1 neurons and plot the exemplars.
+```{r AMMCIVLPPN1-cl, custom.plot=TRUE, cache=TRUE}
+ammcivlppn1cl=subset(clusterp0, item%in%ammcivlppn1)$cluster
+clear3d()
+op=structure(list(FOV = 0, userMatrix = structure(c(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.573004126548767), .Names = c("FOV", "userMatrix", "scale", "zoom"))
+par3d(op)
+drawRegionSurf(c("IVLP_L", "IVLP_R", "AMMC_L", "AMMC_R"), alpha=0.3, FCWBNP.surf)
+plot3d(apres16k.p0, 'exem', clusters=ammcivlppn1cl, soma=T)
+```
+
+It corresponds to these clusters `r unique(ammcivlppn1cl)`, and  `r length(subset(clusterp0, cluster%in%unique(ammcivlppn1cl))$item)` neurons.
+
+Plot all neurons.
+```{r AMMCIVLPPN1-clall, custom.plot=TRUE, cache=TRUE}
+clear3d()
+par3d(op)
+plot3d(apres16k.p0, 'all', clusters=unique(ammcivlppn1cl), soma=T)
+```
