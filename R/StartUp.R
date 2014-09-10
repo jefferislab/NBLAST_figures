@@ -11,10 +11,9 @@ if(!identical(try(packageVersion('flycircuit')>=package_version('0.5.3'), silent
     options(repos="http://cran.rstudio.com")
 
   # install standard packages
-  install.packages(c('doMC', 'dendroextras', 'rgl', 'ggplot2', 'spam'))
+  install.packages(c('doMC', 'dendroextras', 'rgl', 'ggplot2', 'spam', 'knitr'))
 
   if(!require(devtools)) install.packages('devtools')
-  devtools::install_github("yihui/knitr")
   devtools::install_github("jefferis/nat")
   devtools::install_github(c("nat.nblast","nat.templatebrains","nat.flybrains"), username="jefferislab")
   devtools::install_github("jefferis/flycircuit")
@@ -64,7 +63,7 @@ height_for_ngroups<-function(hc, k) {
 
 
 # knitr hook_rgl but with longer wait time
-hook_rgl2<-function (before, options, envir) {
+hook_rgl <- function (before, options, envir) {
   library(rgl)
   if (before || rgl.cur() == 0)
     return()

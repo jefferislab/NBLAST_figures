@@ -10,7 +10,7 @@ Panels for Neuron Search figure.
 source("../../R/StartUp.R", chdir = TRUE)
 opts_chunk$set(message=FALSE,fig.height=21.8/25.4, fig.width=36.334/25.4, dev='png', dpi=300, fig.path="figure/")
 library(mixOmics)
-knit_hooks$set(custom.plot = hook_rgl2) #Needed to embed plots
+knit_hooks$set(custom.plot = hook_rgl) #Needed to embed plots
 par3dmini=c("FOV", "userMatrix", "scale", "zoom")
 ```
 
