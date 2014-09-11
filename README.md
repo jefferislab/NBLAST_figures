@@ -6,7 +6,7 @@ This repository contains the [knitr](http://yihui.name/knitr/) documents used to
 
 1. Install R from http://www.r-project.org/ (you need at least R 3.0.2, latest R recommended)
 2. Install RStudio from http://www.rstudio.com
-3. Git clone or dowload and unzip this repository
+3. Git clone or [download](https://github.com/jefferislab/NBLAST_figures/archive/master.zip) and unzip this repository
 4. Double click on `nblast_figures.Rproj` to start a clean R session in RStudio
 5. Open `R/Startup.R` and source it (Code ... Source File) or button with pale blue arrow at top right
    (details [here](https://support.rstudio.com/hc/en-us/articles/200484448-Editing-and-Executing-Code))
