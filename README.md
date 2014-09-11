@@ -28,6 +28,6 @@ When this process has finished, a web page containing text and images will be pr
 Please feel free to:
 
 * submit a [bug report](https://github.com/jefferislab/NBLAST_figures/issues) (recommended for faster response from team)
-* or to contact Greg directly (details in [paper](http://dx.doi.org/10.1101/006346))
+* or contact Greg directly (details in [paper](http://dx.doi.org/10.1101/006346))
 
 should you have any difficulties
