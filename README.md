@@ -18,8 +18,8 @@ This repository contains the [knitr](http://yihui.name/knitr/) documents used to
 2. Open one of the Rmd files under the `fig/` folder and click the 'Knit HTML' button to begin. 
 When this process has finished, a web page containing text and images will be produced.
 3. You can also run the chunks in the report one by one in an interactive R session.
-   use the green "Chunks" button at the top right of the source file window. Choose for example
-   "Run Current Chunk". This will allow you to step through the whole report inspecting the
+   Use the green "Chunks" button at the top right of the source file window. Choose for example
+   "Run Current Chunk". You can step through the whole report chunk by chunk or line by line inspecting the
    intermediate results in R. This includes interactive 3D renderings of the plots of neurons
    which you can rotate and zoom, likely revealing many small details.
 
