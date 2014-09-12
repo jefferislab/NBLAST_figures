@@ -22,6 +22,8 @@ if(!identical(try(packageVersion('flycircuit')>=package_version('0.5.3'), silent
 # Load core nat package
 library(nat)
 library(flycircuit)
+library(nat.flybrains)
+library(nat.nblast)
 
 # Load fly circuit neurons
 if(!exists('dps'))
