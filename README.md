@@ -23,6 +23,8 @@ When this process has finished, a web page containing text and images will be pr
    intermediate results in R. This includes interactive 3D renderings of the plots of neurons
    which you can rotate and zoom, likely revealing many small details.
 
+Watch a video demo [here](http://youtu.be/KaCkZKPaDgE).
+
 ## Contact
 
 Please feel free to:
