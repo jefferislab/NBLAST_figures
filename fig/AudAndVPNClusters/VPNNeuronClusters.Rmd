@@ -98,6 +98,22 @@ plot3d(FCWBNP.surf, "LO_L", alpha=0.3)
 plot3d(FCWBNP.surf, "AOTU_L", alpha=0.3)
 ```
 
+Plot group 4.
+```{r vpns_group4, custom.plot=TRUE, cache=TRUE}
+clear3d()
+op=structure(list(FOV = 0, userMatrix = structure(c(0.737214267253876, 
+0.401136428117752, 0.543694794178009, 0, 0.461759507656097, -0.886563241481781, 
+0.0279886201024055, 0, 0.493247210979462, 0.230422586202621, 
+-0.838816404342651, 0, -17.8954826855309, -9.28587070726861, 
+0.944884777069072, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), 
+    zoom = 0.571428656578064), .Names = c("FOV", "userMatrix", 
+"scale", "zoom"))
+par3d(op)
+plot3d(uvpnshc, k=21, groups=4, soma=T)
+plot3d(FCWBNP.surf, "LO_L", alpha=0.3)
+plot3d(FCWBNP.surf, "PVLP_L", alpha=0.3)
+```
+
 Bilateral VPNs
 ------------------
 
@@ -115,7 +131,7 @@ Hierarchical clustering.
 ```{r HC_bilvpns,fig.width=104.181/25.4, fig.height=43.910/25.4, cache=TRUE,dpi=300}
 bilvpnshc=hclustfc(bilvpns)
 bilvpnshc$height=sqrt(bilvpnshc$height)
-bilvpnshcc=colour_clusters(bilvpnshc, k=8, groupLabels=LETTERS[1:8])
+bilvpnshcc=colour_clusters(bilvpnshc, k=8, groupLabels=c("i", "ii", "iii", "iv", "v", "vi", "vii", "viii"))
 labels(bilvpnshcc)=NULL
 par(mar=c(0,2,0,0), cex=0.7)
 plot(bilvpnshcc)

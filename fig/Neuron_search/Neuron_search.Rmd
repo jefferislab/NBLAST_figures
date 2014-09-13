@@ -35,7 +35,7 @@ nopen3d()
 plot3d(FCWB)
 op=structure(list(FOV = 0, userMatrix = structure(c(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.218791082501411), .Names = c("FOV", "userMatrix", "scale", "zoom"))
 par3d(op)
-plot3d("FruMARCM-M001629_seg001", col='black', lwd=2, soma=T)
+plot3d("FruMARCM-M001629_seg001", col='black', lwd=4, soma=T)
 ```
 
 Plot the query and the top hit.
@@ -228,7 +228,7 @@ Plots for E panels
 ---------------------------
 
 Collect the tophit for each neuron (rank 2) from dataframe tophits and plot forward normalised scores as histogram.
-```{r TopHitsMeanScore, fig.width=60.156/25.4*5, fig.height=60.325/25.4*5, cache=TRUE}
+```{r TopHitsMeanScore, fig.width=60.156/25.4*4, fig.height=60.325/25.4*4, cache=TRUE}
 tophits2=subset(tophits, query%in%good_images)
 normscoresall=mapply(fc_nblast, tophits2[,'target'], tophits2[,'query'], normalisation='mean')
 summary(normscoresall)
@@ -239,7 +239,7 @@ qq+theme(axis.text.x=element_text(size=22), axis.text.y=element_text(size=22), a
 ```
 
 Plot of neuron images divided by type: same raw image, same segmentation, same specimen or different specimen
-```{r SimilarNeuronType, fig.width=116.064/25.4*5, fig.height=60.591/25.4*5, cache=TRUE}
+```{r SimilarNeuronType, fig.width=116.064/25.4*4, fig.height=60.591/25.4*4, cache=TRUE}
 qq2=ggplot(data=subset(top80sym,!duplicated(pair.number) | is.na(pair.number)), aes(x=revscore.norm, y=value.norm)) + geom_point(aes(colour=type), size=10) + labs(x="Reverse score", y="Forward score", colour="Image Type")+theme(axis.text.x=element_text(size=22), axis.text.y=element_text(size=22), axis.title.x=element_text(size=26), axis.title.y=element_text(size=26), legend.text=element_text(size=26), legend.title=element_text(size=26),legend.position=c(0.86, 0.11))
 levels(qq2$data$type)<-c("Same segmentation", "Same raw image", "Same specimen", "Different specimen")
 plot(qq2)

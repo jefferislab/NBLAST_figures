@@ -25,7 +25,7 @@ options(flycircuit.scoremat=AP_score_mat)
 Use affinity propagaton to cluster the Flycircuit neurons.
 
 Plot mean cluster score vs cluster size.
-```{r ClusterSizeVsScore, fig.width=78.151/25.4*5, fig.height=46.363/25.4*5, cache=TRUE}
+```{r ClusterSizeVsScore, fig.width=78.151/25.4*4, fig.height=46.363/25.4*4, cache=TRUE}
 csize=table(as.integer(clusterp0$exemplar))
 
 clustersim<-function(gns,summaryfun=mean){
