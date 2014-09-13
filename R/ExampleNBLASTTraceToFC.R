@@ -1,4 +1,6 @@
 # NBLAST a trace against Fly Circuit neurons
+# Code used for demo video:
+# NBLAST: How to find the most similar FlyCircuit neurons to a GAL4 tracing
 
 source("R/StartUp.R")
 # using the tracing of a Janelia GAL4 line (R18C12) made in Vaa3D
