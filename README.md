@@ -2,11 +2,13 @@
 
 This repository contains the [knitr](http://yihui.name/knitr/) documents used to make the figure panels for [Costa et al. (2014) NBLAST: Rapid, sensitive comparison of neuronal structure and construction of neuron family databases](http://dx.doi.org/10.1101/006346).
 
-Watch a video demo [here](http://youtu.be/KaCkZKPaDgE).
+Watch a video demo of how to run code [here](http://youtu.be/KaCkZKPaDgE). Read on for the details.
 
 ## Prerequisites
-All of our analysis uses the statistical programming environment, R, for which RStudio
-is a convenient cross-platform IDE.
+All of our analysis uses the statistical programming environment, R. RStudio
+is a convenient cross-platform IDE with excellent support for authoring
+[R Markdown](http://rmarkdown.rstudio.com/) documents, which combine text
+written in markdown with embedded R code chunks.
 
 1. Install R from http://www.r-project.org/ (you need at least R 3.0.2, latest R recommended)
 2. Install RStudio from http://www.rstudio.com
