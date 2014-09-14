@@ -15,7 +15,7 @@ written in markdown with embedded R code chunks.
 
 ## Setting Up
 
-1. Git clone or [download](https://github.com/jefferislab/NBLAST_figures/archive/master.zip) and unzip this repository
+1. [Download](https://github.com/jefferislab/NBLAST_figures/archive/master.zip) and unzip this repository (or `git clone` if you prefer)
 2. Double click on `nblast_figures.Rproj` to start a clean R session in RStudio
 3. Open `R/Startup.R` and source it (Code ... Source File) or button with pale blue arrow at top right
    (details [here](https://support.rstudio.com/hc/en-us/articles/200484448-Editing-and-Executing-Code))
@@ -24,13 +24,17 @@ written in markdown with embedded R code chunks.
 ## Running a report
 
 1. Double click on `nblast_figures.Rproj` to start RStudio
-2. Open one of the Rmd files under the `fig/` folder and click the 'Knit HTML' button to begin. 
+2. Open one of the Rmd files under the `fig/` folder
+3. Click the 'Knit HTML' button to begin. 
 When this process has finished, a web page containing text and images will be produced.
 3. You can also run the chunks in the report one by one in an interactive R session.
-   Use the green "Chunks" button at the top right of the source file window. Choose for example
-   "Run Current Chunk". You can step through the whole report chunk by chunk or line by line inspecting the
-   intermediate results in R. This includes interactive 3D renderings of the plots of neurons
-   which you can rotate and zoom, likely revealing many small details.
+  1. Use the green "Chunks" button at the top right of the source file window. Choose for example
+   "Run Current Chunk". 
+  2. You can step through the whole report chunk by chunk or line by line inspecting the
+   intermediate results in R. 
+  3. This includes interactive 3D renderings of the plots of neurons
+   which you can rotate and zoom; this will likely reveal additional information beyond
+   the static projection view in the html report created earlier.
 
 
 ## Contact
