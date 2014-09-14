@@ -15,7 +15,7 @@ install:
   - chmod +x $HOME/pandoc/pandoc
   - pandoc --version
 
-  - ./travis-tool.sh r_binary_install rgl igraph devtools filehash
+  - ./travis-tool.sh r_binary_install rgl igraph devtools filehash r-cran-rcppeigen plyr bigmemory ff
   - ./travis-tool.sh install_github rstudio/rmarkdown
 
   - sh -e /etc/init.d/xvfb start
