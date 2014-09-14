@@ -3,8 +3,8 @@ library(methods)
 library(rmarkdown)
 
 options(repos="http://cran.rstudio.com/")
-install.packages('devtools')
 devtools::install_github('jefferis/nat')
+
 library(nat)
 print(cmtk.bindir())
 print(dir(cmtk.bindir()))
