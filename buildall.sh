@@ -6,10 +6,6 @@ options(repos="http://cran.rstudio.com/")
 devtools::install_github('jefferis/nat')
 
 library(nat)
-print(Sys.getenv("PATH"))
-print(Sys.which("cmtk"))
-print(cmtk.bindir())
-print(dir(cmtk.bindir()))
 
 root_dir <- getwd()
 rmarkdown_files <- dir(pattern=".Rmd", recursive=TRUE)
