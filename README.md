@@ -2,7 +2,7 @@
 
 This repository contains the [knitr](http://yihui.name/knitr/) documents used to make the figure panels for [Costa et al. (2014) NBLAST: Rapid, sensitive comparison of neuronal structure and construction of neuron family databases](http://dx.doi.org/10.1101/006346).
 
-Watch a video demo of how to run code [here](http://youtu.be/KaCkZKPaDgE). Read on for the details.
+Watch a video demo of how to run code [here](http://youtu.be/LJgZejabqqg). Read on for the details.
 
 ## Prerequisites
 All of our analyses use the statistical programming environment, R. RStudio
