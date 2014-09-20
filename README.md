@@ -1,4 +1,5 @@
 # NBLAST figures
+[![Build Status](https://travis-ci.org/jefferislab/NBLAST_figures.svg?branch=master)](https://travis-ci.org/jefferislab/NBLAST_figures)
 
 This repository contains the [knitr](http://yihui.name/knitr/) documents used to make the figure panels for [Costa et al. (2014) NBLAST: Rapid, sensitive comparison of neuronal structure and construction of neuron family databases](http://dx.doi.org/10.1101/006346).
 
