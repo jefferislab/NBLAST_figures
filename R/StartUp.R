@@ -11,11 +11,11 @@ if(!identical(try(packageVersion('flycircuit')>=package_version('0.5.3'), silent
     options(repos="http://cran.rstudio.com")
 
   # install standard packages
-  install.packages(c('doMC', 'dendroextras', 'rgl', 'ggplot2', 'spam', 'knitr', 'apcluster'))
+  install.packages(c('doMC', 'dendroextras', 'rgl', 'ggplot2', 'spam', 'knitr', 'apcluster', 'mixOmics'))
 
   if(!require(devtools)) install.packages('devtools')
   devtools::install_github("jefferis/nat")
-  devtools::install_github(c("nat.nblast","nat.templatebrains","nat.flybrains"), username="jefferislab")
+  devtools::install_github(c("jefferislab/nat.nblast","jefferislab/nat.templatebrains","jefferislab/nat.flybrains"))
   devtools::install_github("jefferis/flycircuit")
 }
 
