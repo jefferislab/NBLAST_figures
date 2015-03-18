@@ -1,0 +1,301 @@
+---
+title: "NBLAST_search"
+output: html_document
+---
+
+NBLAST Search fig
+========================================================
+
+Panels for NBLAST Search figure.
+```{r echo=FALSE,message=FALSE,warning=FALSE}
+source("../../R/StartUp.R")
+opts_chunk$set(message=FALSE,dpi=600, fig.height=1, fig.width=1/0.6, fig.path="figure/")
+library(mixOmics)
+
+knit_hooks$set(rgl = hook_rgl2) #Needed to embed plots
+nopen3d(FOV=0,windowRect = 100 + opts_chunk$get('dpi') * c(0, 0, opts_chunk$get('fig.width'), opts_chunk$get('fig.height')))
+par3dmini=c("FOV", "userMatrix", "scale", "zoom")
+```
+
+Scale bar panel A
+--------------------
+```{r scaleBar, fig.height=18.642/25.4, fig.width=3.175/25.4}
+imscalebar(seq(0,1,len=11),col=jet.colors(10),horizontal=F, mar=c(0,0,0,0))
+```
+
+For types of searches:
+
+Panel B: Neuron against neuron
+-------------------------------
+
+Plot the query neuron `r fc_neuron("FruMARCM-M001189_seg001")`
+```{r FruMARCM-M001189_seg001_black, rgl=TRUE, cache=TRUE, rgl.wait=1}
+#op=par3d(no.readonly=T)
+#dput(op[par3dmini])
+op=structure(list(FOV = 0, userMatrix = structure(c(1, 0, 0, 0, 
+0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1), .Dim = c(4L, 4L)), scale = c(1, 
+1, 1), zoom = 0.609543204307556), .Names = c("FOV", "userMatrix", 
+"scale", "zoom"))
+par3d(op)
+plot3d("FruMARCM-M001189_seg001", col='black', lwd=3, soma=T)
+```
+
+Plot the query and the top hit.
+```{r FruMARCM-M001189_seg001_blackandTophit, rgl=TRUE, cache=TRUE}
+clear3d()
+par3d(op)
+plot3d("FruMARCM-M001189_seg001", col='black', lwd=3, soma=T)
+plot3d(names(sort(fc_nblast("FruMARCM-M001189_seg001"), decreasing=T)[2]), col='red', lwd=3, soma=T)
+```
+
+Plot the top 8.
+```{r FruMARCM-M001189_seg001_top8, rgl=TRUE, cache=TRUE}
+clear3d()
+par3d(op)
+plot3d("FruMARCM-M001189_seg001", col='black', lwd=3, soma=T)
+plot3d(names(sort(fc_nblast("FruMARCM-M001189_seg001"), decreasing=T)[2]), col='red', lwd=3, soma=T)
+plot3d(names(sort(fc_nblast("FruMARCM-M001189_seg001"), decreasing=T)[3:11]), soma=T)
+```
+
+For C panels: neuron segment against whole neurons
+---------------------
+
+Using PNs: isolate medial and outer tract. 
+
+For the medial tract: choose one neuron and select tract.
+```{r choose_mALT, eval=FALSE}
+malt1=fc_gene_name(subset(annotation, annotation_class=="MainTract" & text=="mALT")$neuron_idid[1])
+clear3d()
+op=structure(list(FOV = 0, userMatrix = structure(c(0.702212810516357, 
+-0.350920796394348, 0.619476675987244, 0, -0.177913621068001, 
+-0.928978025913239, -0.324571371078491, 0, 0.689379036426544, 
+0.117704831063747, -0.714773893356323, 0, 0, 0, 0, 1), .Dim = c(4L, 
+4L)), scale = c(1, 1, 1), zoom = 0.694574952125549), .Names = c("FOV", 
+"userMatrix", "scale", "zoom"))
+par3d(op)
+plot3d(malt1, lwd=3, soma=T, col='black')
+#s3d=select3d()
+#malt1tract=subset(dps[[malt1]], s3d)
+#save(malt1tract, file="/GD/LMBD/Papers/2012NBlast/R/malt1tract.rda")
+```
+
+Plot neuron and selected tract.
+```{r mALT_query, rgl=TRUE, cache=TRUE}
+load(file="../../R/malt1tract.rda")
+fc_neuron(malt1)
+clear3d()
+par3d(op)
+plot3d(malt1tract, col='red', lwd=5)
+plot3d(malt1, lwd=3, soma=T, col='black')
+```
+
+Load dpscanon.
+```{r read_dps, cache=TRUE}
+dpscanon=read.neurons(dps)
+```
+
+Blast tract against dps and plot top 10 hits.
+```{r mALT_tract_blast, rgl=TRUE, cache=TRUE}
+sc_malt=nblast(malt1tract, dpscanon)
+clear3d()
+par3d(op)
+plot3d(malt1tract, col='red', lwd=3)
+plot3d(names(sort(sc_malt, decreasing=T)[1:10]), soma=T, lwd=3)
+```
+
+Plot only the tract for the top 10 hits.
+```{r mALT_tract_blast_only, rgl=TRUE, cache=TRUE}
+clear3d()
+par3d(op)
+plot3d(malt1tract, col='red', lwd=3)
+malttop10=dps[names(sort(sc_malt, decreasing=T))[1:10]]
+plot3d(prune(malttop10, malt1tract, maxdist=5), lwd=3)
+```
+
+For the outer tract:
+Select one neuron and select the tract.
+```{r choose_oALT, eval=FALSE}
+oalt1=names(dps[which(fc_glom(names(dps))=="V")])
+plot3d( "GadMARCM-F000307_seg001", soma=T, col='black')
+#oact=select3d()
+#oact.vpn=subset(dps[["GadMARCM-F000307_seg001"]],oact)
+#save(oact.vpn, file="../../R/oact.vpn.rda")
+```
+
+Plot the tract and the neuron.
+```{r oALT_query, rgl=TRUE, cache=TRUE}
+load(file="../../R/oact.vpn.rda")
+oalt1=names(dps[which(fc_glom(names(dps))=="V")])
+fc_neuron(oalt1)
+clear3d()
+op=structure(list(FOV = 0, userMatrix = structure(c(1, 0, 0, 0, 
+0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1), .Dim = c(4L, 4L)), scale = c(1, 
+1, 1), zoom = 0.600000023841858), .Names = c("FOV", "userMatrix", 
+"scale", "zoom"))
+par3d(op)
+plot3d(oact.vpn, col='red', lwd=5)
+plot3d(oalt1, lwd=3, soma=T, col='black')
+```
+
+Blast tract against dps and plot top 10 hits.
+```{r oALT_tract_blast, rgl=TRUE, cache=TRUE}
+sc_oalt=nblast(oact.vpn, dpscanon)
+clear3d()
+par3d(op)
+plot3d(oact.vpn, col='red', lwd=3)
+plot3d(names(sort(sc_oalt, decreasing=T)[1:10]), soma=T, lwd=3)
+```
+
+Plot only the tract for the top 10 hits.
+```{r oALT_tract_blast_only, rgl=TRUE, cache=TRUE}
+clear3d()
+par3d(op)
+par3d(zoom=0.7657688)
+plot3d(oact.vpn, col='red', lwd=3)
+oalttop10=dps[names(sort(sc_oalt, decreasing=T))[1:10]]
+plot3d(prune(oalttop10, oact.vpn, maxdist=5), lwd=3)
+```
+
+Panel D: tracing from pMP-e
+----------------
+
+Convert stalk to dotprops and plot.
+```{r P1stalk, cache=TRUE, rgl=TRUE}
+p1stalk=read.neuron("P1_stalk_skel.am")
+p1stalk.fcwb=xform_brain(p1stalk, sample=JFRC2, ref=FCWB)
+# convert to dotprops
+p1stalk.dps=dotprops(p1stalk.fcwb, resample=1, k=5)
+clear3d()
+oplat=structure(list(FOV = 0, userMatrix = structure(c(-0.0198177099227905, 
+0.100070603191853, 0.994782984256744, 0, -0.2661412358284, -0.959607124328613, 
+0.0912300795316696, 0, 0.963730275630951, -0.262944787740707, 
+0.0456501543521881, 0, 0, 0, 0, 1), .Dim = c(4L, 4L)), scale = c(1, 
+1, 1), zoom = 0.9307966), .Names = c("FOV", "userMatrix", 
+"scale", "zoom"))
+par3d(oplat)
+plot3d(p1stalk.dps, lwd=3, col='purple')
+```
+
+Blast stalk against all neurons. Plot 10 top hits
+```{r P1stalk_blast, rgl=TRUE, cache=TRUE}
+# using alpha value weighting to emphasise neurites ...
+p1stalk.sca=nblast(p1stalk.dps, dpscanon, UseAlpha = T, normalised = T)
+clear3d()
+op=structure(list(FOV = 0, userMatrix = structure(c(1, 0, 0, 0, 
+0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1), .Dim = c(4L, 4L)), scale = c(1, 
+1, 1), zoom = 0.60), .Names = c("FOV", "userMatrix", 
+"scale", "zoom"))
+par3d(op)
+plot3d(p1stalk.dps, col='purple', lwd=3)
+p1stalk.scatop10=dps[names(sort(p1stalk.sca, decreasing=T))[1:10]]
+plot3d(p1stalk.scatop10, lwd=3, soma=T)
+```
+
+Plot in lateral view
+```{r P1stalk_blast_lateral, cache=TRUE, rgl=TRUE}
+clear3d()
+oplat=structure(list(FOV = 0, userMatrix = structure(c(-0.0231221914291382, 
+0.0445186011493206, 0.998740911483765, 0, -0.19016632437706, 
+-0.980964064598083, 0.039323590695858, 0, 0.981479525566101, 
+-0.189017653465271, 0.0311479568481445, 0, 0, 0, 0, 1), .Dim = c(4L, 
+4L)), scale = c(1, 1, 1), zoom = 0.600000023841858), .Names = c("FOV", 
+"userMatrix", "scale", "zoom"))
+par3d(oplat)
+plot3d(p1stalk.dps, col='purple', lwd=3)
+plot3d(p1stalk.scatop10, lwd=3, soma=T)
+```
+
+Panel E: Gal4 tracing against FC neurons
+---------
+ 
+We were looking for a line that had neurons that followed a dorsal tract.
+This line was found by a VFB query for expression in the PVLP, scanning the results and downloading the registered image.
+
+JFRC2\_GMR\_18C12\_AE\_01\_05-fA01b\_C100226\_20100226143229515\_02\_warp\_m0g80c8e1e-1x26r3.nrrd
+
+Using the tracing of a Janelia GAL4 line (R18C12) made in Vaa3D. 
+
+The tracing was converted into dotprops, corrected voxel size and transformed to FCWB.
+```{r Gal4_tracing_into_dotprops, eval=FALSE}
+#R18C12=read.neuron("/GD/LMBD/Papers/2012NBlast/R/R18C12_L.am") # original tracing with subtrees stitched together
+#R18C12=R18C12*JFRC2$voxdims # making voxel size correct
+#write.neuron(R18C12, file="/GD/LMBD/Papers/2012NBlast/R/R18C12_voxdims.am", format='hxlineset', F=T) #resave with new name
+#R18C12=read.neuron(f="/GD/LMBD/Papers/2012NBlast/R/R18C12_voxdims.am")
+#R18C12.FCWB=xform_brain(R18C12,sample=JFRC2,ref=FCWB) #transform to FCWB
+#write.neuron(R18C12.FCWB, file="/GD/LMBD/Papers/2012NBlast/R/R18C12.FCWB.swc", F=T)
+```
+
+Plot the tracing.
+```{r Gal4_tracing, cache=TRUE, rgl=TRUE}
+R18C12.FCWB=read.neuron(f="R18C12.FCWB.swc")
+clear3d()
+optrace=structure(list(FOV = 0, userMatrix = structure(c(1, 0, 0, 0, 
+0, -1, 0, 0, 0, 0, -1, 0, 0.89562052488327, 0.0229582022875547, 
+0, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.665256559848785), .Names = c("FOV", 
+"userMatrix", "scale", "zoom"))
+par3d(optrace)
+plot3d(R18C12.FCWB,lwd=3,col='black')
+```
+
+Blast the trace against the FC neurons and plot the top 3 hits
+```{r blast_GAL4_FC.norm, cache=TRUE, rgl=TRUE}
+R18C12.fc.sc.norm=nblast(dotprops(R18C12.FCWB,resample=1,k=5), normalisation="mean",target=dpscanon)
+R18C12.fc.sc.norm.top3=dps[names(sort(R18C12.fc.sc.norm,dec=T))[1:3]]
+clear3d()
+op=structure(list(FOV = 0, userMatrix = structure(c(1, 0, 0, 0, 
+0, -1, 0, 0, 0, 0, -1, 0, 0.213899674296162, 6.43469228666443, 
+0, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.600000083446503), .Names = c("FOV", 
+"userMatrix", "scale", "zoom"))
+par3d(op)
+plot3d(R18C12.FCWB,lwd=3, col='black')
+plot3d(R18C12.fc.sc.norm.top3, lwd=3, soma=T)
+```
+
+Plot the top hits in dorsal view.
+```{r blast_GAL4_FC.norm_lat, cache=TRUE, rgl=TRUE}
+clear3d()
+opdors=structure(list(FOV = 0, userMatrix = structure(c(0.99937516450882, 
+0.0329592153429985, 0.0127521678805351, 0, 0.0169835463166237, 
+-0.13147696852684, -0.99117374420166, 0, -0.0309914499521255, 
+0.990770936012268, -0.13195475935936, 0, 3.92906141281128, -7.32608795166016, 
+-55.9301376342773, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), 
+    zoom = 0.600000083446503), .Names = c("FOV", "userMatrix", 
+"scale", "zoom"))
+par3d(opdors)
+plot3d(R18C12.FCWB,lwd=3,col='black')
+plot3d(R18C12.fc.sc.norm.top3, lwd=3, soma=T)
+```
+
+Panel F: search all traces from FC neuron
+---------------
+
+Load all traces.
+```{r load_traces, cache=TRUE}
+hpproj.FCWB.dps.canon=readRDS("../../R/hpproj.FCWB.dps.canon.rds")
+```
+
+Search with one of the previous top hits against all traces. 
+```{r neuron_to_traces_query, cache=TRUE, rgl=TRUE}
+ntoblast=names(R18C12.fc.sc.norm.top3)[3]
+tracesc=nblast(query=dps[[ntoblast]], target=hpproj.FCWB.dps.canon, normalisation="mean")
+tracesctop10=names(sort(tracesc, dec=T))[1:10]
+clear3d()
+par3d(op)
+plot3d(ntoblast, lwd=3, soma=T, col='black')
+```
+
+Plot top 10 hits against the neuron (`r fc_neuron(ntoblast)`)
+```{r neuron_to_traces_blast, cache=TRUE, rgl=TRUE}
+clear3d()
+par3d(op)
+plot3d(ntoblast, lwd=3, soma=T, col='black')
+plot3d(tracesctop10, lwd=3, db=hpproj.FCWB.dps.canon)
+```
+
+Plot top 10 hits in dorsal view.
+```{r neuron_to_traces_blast_lat, cache=TRUE, rgl=TRUE}
+clear3d()
+par3d(opdors)
+plot3d(ntoblast, lwd=3, soma=T, col='black')
+plot3d(tracesctop10, lwd=3, db=hpproj.FCWB.dps.canon)
+```
