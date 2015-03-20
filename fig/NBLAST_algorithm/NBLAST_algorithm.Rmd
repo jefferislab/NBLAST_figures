@@ -7,7 +7,7 @@ NBLAST figure
 ==============================
 Some of the panels for NBLAST_algorithm figure.
 ```{r startup, echo=FALSE,message=FALSE,warning=FALSE}
-source("../../R/StartUp.R", chdir = TRUE)
+source("R/StartUp.R", chdir = TRUE)
 opts_chunk$set(message=FALSE,fig.height=21.8/25.4, fig.width=36.334/25.4, dev='png', dpi=300, fig.path="figure/")
 dir.create('figure')
 knit_hooks$set(custom.plot = hook_rgl) #Needed to embed plots

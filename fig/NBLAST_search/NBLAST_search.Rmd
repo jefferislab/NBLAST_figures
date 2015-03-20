@@ -8,7 +8,7 @@ NBLAST Search fig
 
 Panels for NBLAST Search figure.
 ```{r echo=FALSE,message=FALSE,warning=FALSE}
-source("../../R/StartUp.R")
+source("R/StartUp.R")
 opts_chunk$set(message=FALSE,dpi=600, fig.height=1, fig.width=1/0.6, fig.path="figure/")
 library(mixOmics)
 
@@ -81,7 +81,7 @@ plot3d(malt1, lwd=3, soma=T, col='black')
 
 Plot neuron and selected tract.
 ```{r mALT_query, rgl=TRUE, cache=TRUE}
-load(file="../../R/malt1tract.rda")
+load(file="R/malt1tract.rda")
 fc_neuron(malt1)
 clear3d()
 par3d(op)
@@ -116,7 +116,7 @@ For the outer tract:
 Select one neuron and select the tract.
 ```{r choose_oALT, eval=FALSE}
 oalt1=names(dps[which(fc_glom(names(dps))=="V")])
-plot3d( "GadMARCM-F000307_seg001", soma=T, col='black')
+plot3d("GadMARCM-F000307_seg001", soma=T, col='black')
 #oact=select3d()
 #oact.vpn=subset(dps[["GadMARCM-F000307_seg001"]],oact)
 #save(oact.vpn, file="../../R/oact.vpn.rda")
@@ -124,7 +124,7 @@ plot3d( "GadMARCM-F000307_seg001", soma=T, col='black')
 
 Plot the tract and the neuron.
 ```{r oALT_query, rgl=TRUE, cache=TRUE}
-load(file="../../R/oact.vpn.rda")
+load(file="R/oact.vpn.rda")
 oalt1=names(dps[which(fc_glom(names(dps))=="V")])
 fc_neuron(oalt1)
 clear3d()
@@ -271,7 +271,7 @@ Panel F: search all traces from FC neuron
 
 Load all traces.
 ```{r load_traces, cache=TRUE}
-hpproj.FCWB.dps.canon=readRDS("../../R/hpproj.FCWB.dps.canon.rds")
+hpproj.FCWB.dps.canon=readRDS("R/hpproj.FCWB.dps.canon.rds")
 ```
 
 Search with one of the previous top hits against all traces. 

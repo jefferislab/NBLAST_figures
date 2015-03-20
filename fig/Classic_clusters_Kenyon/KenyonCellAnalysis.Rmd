@@ -22,7 +22,7 @@ Subsequently additional types have been proposed. Presently [VFB lists](http://w
 Setting Up
 -----------------
 ```{r startup, warning=FALSE}
-source("../../R/StartUp.R", chdir = TRUE)
+source("R/StartUp.R", chdir = TRUE)
 suppressMessages(library(apcluster))
 # set up for rgl plots
 opts_chunk$set(message=FALSE,fig.height=22.605/25.4*1.5, fig.width=34.925/25.4*1.5, dev='png', dpi=300, include=TRUE, fig.path="figure/")
@@ -243,14 +243,14 @@ plot3d(hcmbg, k=3, soma=TRUE)
 
 Plot a gamma lobe slice.
 ```{r preparing_gamma_subclust.rgl3.gammalobe, eval=FALSE}
-s3dgl=select3d()
-mbgall=dps[labels(hcmbg)]
-mbgallgldb=nlapply(mbgall,subset,s3dgl)
-save(mbgallgldb, file="mbgallgldb.rda")
+#s3dgl=select3d()
+#mbgall=dps[labels(hcmbg)]
+#mbgallgldb=nlapply(mbgall,subset,s3dgl)
+#save(mbgallgldb, file="mbgallgldb.rda")
 ```
 
 ```{r gamma_subclust.rgl3.gammalobe, cache=TRUE, custom.plot=TRUE}
-load_si_data("mbgallgldb.rda")
+load(file="R/mbgallgldb.rda")
 clear3d()
 gammalobe=structure(list(FOV = 0, userMatrix = structure(c(-0.040558859705925, -0.00261938944458961, 0.999173581600189, 0, 0.10028849542141, -0.994957208633423, 0.00146286003291607, 0, 0.99413126707077, 0.100264951586723, 0.0406170189380646, 0, -1.26174825827429, -0.334822400402482, 5.9625344276428, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.783526360988617), .Names = c("FOV", "userMatrix", "scale", "zoom"))
 par3d(gammalobe)
@@ -336,14 +336,14 @@ plot3d(hcmbg3.13, k=4, soma=TRUE)
 
 And a gamma lobe slice.
 ```{r preparing_gamma_subclust.rgl3.13.gammalobe, eval=FALSE}
-s3dgl=select3d()
-mbg=dps[labels(hcmbg3.13)]
-mbggldb=nlapply(mbg,subset,s3dgl)
-save(mbggldb, file="mbggldb.rda")
+#s3dgl=select3d()
+#mbg=dps[labels(hcmbg3.13)]
+#mbggldb=nlapply(mbg,subset,s3dgl)
+#save(mbggldb, file="mbggldb.rda")
 ```
 
 ```{r gamma_subclust.rgl3.13.gammalobe, cache=TRUE, custom.plot=TRUE}
-load_si_data("mbggldb.rda")
+load(file="R/mbggldb.rda")
 clear3d()
 gammalobe=structure(list(FOV = 0, userMatrix = structure(c(-0.040558859705925, -0.00261938944458961, 0.999173581600189, 0, 0.10028849542141, -0.994957208633423, 0.00146286003291607, 0, 0.99413126707077, 0.100264951586723, 0.0406170189380646, 0, -1.26174825827429, -0.334822400402482, 5.9625344276428, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.783526360988617), .Names = c("FOV", "userMatrix", "scale", "zoom"))
 par3d(gammalobe)
@@ -433,14 +433,14 @@ plot3d(hcmbab, k=4, soma=TRUE)
 
 And a peduncle slice.
 ```{r preparing_alphabeta_neurons_subtypes.ped.rgl, eval=FALSE}
-s3dped=select3d()
-mbab=dps[labels(hcmbab)]
-mbabpeddb=nlapply(mbab,subset,s3dped)
-save(mbabpeddb, file="mbabpeddb.rda")
+#s3dped=select3d()
+#mbab=dps[labels(hcmbab)]
+#mbabpeddb=nlapply(mbab,subset,s3dped)
+#save(mbabpeddb, file="mbabpeddb.rda")
 ```
 
 ```{r alphabeta_neurons_subtypes.ped.rgl, cache=TRUE, custom.plot=TRUE}
-load_si_data("mbabpeddb.rda")
+load(file="R/mbabpeddb.rda")
 clear3d()
 abped=structure(list(FOV = 0, userMatrix = structure(c(-0.901958584785461, 0.108084462583065, 0.418076783418655, 0, -0.0636429414153099, -0.990868389606476, 0.11886465549469, 0, 0.42710679769516, 0.0806033536791801, 0.900601208209991, 0, 0.966890145650542, -1.39563653308483, 1.30025506019592, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.58467960357666), .Names = c("FOV", "userMatrix", "scale", "zoom"))
 par3d(abped)
@@ -477,14 +477,14 @@ plot3d(hcmbabg1, k=2, soma=TRUE)
 
 Plot a slice in dorsal view.
 ```{r preparing_ab_subclustg1.dorsal.rgl, eval=FALSE}
-s3dlobe=select3d()
-abg1=dps[labels(hcmbabg1)]
-abg1db=nlapply(abg1,subset,s3dlobe)
-save(abg1db, file="abg1db.rda")
+#s3dlobe=select3d()
+#abg1=dps[labels(hcmbabg1)]
+#abg1db=nlapply(abg1,subset,s3dlobe)
+#save(abg1db, file="abg1db.rda")
 ```
 
 ```{r ab_subclustg1.dorsal.rgl, custom.plot=TRUE, cache=TRUE}
-load_si_data("abg1db.rda")
+load(file="R/abg1db.rda")
 clear3d()
 dorsalvl=structure(list(FOV = 0, userMatrix = structure(c(0.917340934276581, -0.356077581644058, -0.178029298782349, 0, -0.0438270159065723, 0.354147255420685, -0.934162080287933, 0, 0.395682454109192, 0.864747583866119, 0.309268176555634, 0, 0.404987892261453, -0.297006159104314, 0.599182009696966, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1),     zoom = 0.613913536071777), .Names = c("FOV", "userMatrix", "scale", "zoom"))
 par3d(dorsalvl)
@@ -527,14 +527,14 @@ plot3d(hcmbabg2, k=3,  groups=c(1,3), soma=TRUE)
 Plot a slice in dorsal view of these groups:1+3.
 ```{r preparing_ab_subclustg2.1_3.dorsal.rgl, eval=FALSE}
 mbabg2.13=subset(hcmbabg2, k=3, groups=c(1,3))
-s3d=select3d()
-abg2.13=dps[mbabg2.13]
-abg2.13db=nlapply(abg2.13,subset,s3d)
-save(abg2.13db, file="abg2.13db.rda")
+#s3d=select3d()
+#abg2.13=dps[mbabg2.13]
+#abg2.13db=nlapply(abg2.13,subset,s3d)
+#save(abg2.13db, file="abg2.13db.rda")
 ```
 
 ```{r ab_subclustg2.1_3.dorsal.rgl, custom.plot=TRUE, cache=TRUE}
-load_si_data("abg2.13db.rda")
+load(file="R/abg2.13db.rda")
 clear3d()
 op=structure(list(FOV = 0, userMatrix = structure(c(0.917340934276581, -0.356077581644058, -0.178029298782349, 0, -0.0438270159065723, 0.354147255420685, -0.934162080287933, 0, 0.395682454109192, 0.864747583866119, 0.309268176555634, 0, -0.00433242384341873, 0.860298331553911, 0.599182009696986, 1), .Dim = c(4L, 4L)),     scale = c(1, 1, 1), zoom = 0.458111822605133), .Names = c("FOV", "userMatrix", "scale", "zoom"))
 par3d(op)
@@ -578,14 +578,14 @@ plot3d(hcmbabg3, k=2, soma=TRUE, col=c("cyan", "red"))
 
 Plot a slice in dorsal view.
 ```{r preparing_ab_subclustg3.dorsal.rgl, eval=FALSE}
-s3d=select3d()
-abg3=dps[labels(hcmbabg3)]
-abg3db=nlapply(abg3,subset,s3d)
-save(abg3db, file="abg3db.rda")
+#s3d=select3d()
+#abg3=dps[labels(hcmbabg3)]
+#abg3db=nlapply(abg3,subset,s3d)
+#save(abg3db, file="abg3db.rda")
 ```
 
 ```{r ab_subclustg3.dorsal.rgl, custom.plot=TRUE, cache=TRUE}
-load_si_data("abg3db.rda")
+load(file="R/abg3db.rda")
 clear3d()
 dorsalvl2=structure(list(FOV = 0, userMatrix = structure(c(0.86585795879364, -0.490310043096542, -0.0994304493069649, 0, 0.0208055526018143, 0.2338637560606, -0.972046911716461, 0, 0.49985733628273, 0.839585900306702, 0.212694123387337, 0, -0.453020713289913, 0.014614432136779, -4.35490942001344, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1),     zoom = 0.436296910047531), .Names = c("FOV", "userMatrix", "scale", "zoom"))
 par3d(dorsalvl2)
@@ -636,14 +636,14 @@ plot3d(hcmbabg4, k=2, soma=TRUE, col=c("cyan", "red"))
 
 Plot a slice in dorsal view.
 ```{r preparing_ab_subclustg4.dorsal.rgl, eval=FALSE}
-s3d=select3d()
-abg4=dps[labels(hcmbabg4)]
-abg4db=nlapply(abg4,subset,s3d)
-save(abg4db, file="abg4db.rda")
+#s3d=select3d()
+#abg4=dps[labels(hcmbabg4)]
+#abg4db=nlapply(abg4,subset,s3d)
+#save(abg4db, file="abg4db.rda")
 ```
 
 ```{r ab_subclustg4.dorsal.rgl, custom.plot=TRUE, cache=TRUE}
-load_si_data("abg4db.rda")
+load(file="R/abg4db.rda")
 clear3d()
 dorsalvl3=structure(list(FOV = 0, userMatrix = structure(c(0.922714352607727, -0.352914303541183, -0.155080169439316, 0, -0.00472883507609367, 0.391906142234802, -0.919992983341217, 0, 0.385455250740051, 0.84962397813797, 0.35994878411293, 0, 2.32721664638431, -0.522492676689116, 0.715909183025381, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1),     zoom = 0.415520966053009), .Names = c("FOV", "userMatrix", "scale", "zoom"))
 par3d(dorsalvl3)
