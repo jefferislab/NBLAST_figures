@@ -12,7 +12,7 @@ source("../../R/StartUp.R")
 opts_chunk$set(message=FALSE,dpi=600, fig.height=1, fig.width=1/0.6, fig.path="figure/")
 library(mixOmics)
 
-knit_hooks$set(rgl = hook_rgl2) #Needed to embed plots
+knit_hooks$set(rgl = hook_rgl) #Needed to embed plots
 nopen3d(FOV=0,windowRect = 100 + opts_chunk$get('dpi') * c(0, 0, opts_chunk$get('fig.width'), opts_chunk$get('fig.height')))
 par3dmini=c("FOV", "userMatrix", "scale", "zoom")
 ```
