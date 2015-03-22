@@ -11,8 +11,12 @@ is a convenient cross-platform IDE with excellent support for authoring
 [R Markdown](http://rmarkdown.rstudio.com/) documents, which combine text
 written in Markdown with embedded R code chunks.
 
+Some scripts depend on an installation of the image registration toolkit CMTK in order to transform neurons from one space to another. 
+
+
 1. Install R from http://www.r-project.org/ (you need at least R 3.0.2, latest R recommended).
 2. Install RStudio from http://www.rstudio.com.
+3. Optionally install CMTK from http://www.nitrc.org/projects/cmtk
 
 ## Setting Up
 
