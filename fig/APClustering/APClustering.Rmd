@@ -9,8 +9,8 @@ APClustering fig
 Panels for cluster statistics and hierarchical clustering of exemplars, focusing on central brain and some other examples.
 
 ```{r startup, echo=FALSE,message=FALSE, warning=FALSE}
-source("R/StartUp.R")
-source("R/DivideVPNsCentralBrain.R")
+source("../../R/StartUp.R")
+source("../../R/DivideVPNsCentralBrain.R")
 opts_chunk$set(message=FALSE, fig.height=21.8/25.4, fig.width=36.334/25.4, dpi=300, dev='png', fig.path="figure/")
 knit_hooks$set(custom.plot = hook_rgl) #Needed to embed plots
 par3dmini=c("FOV", "userMatrix", "scale", "zoom")

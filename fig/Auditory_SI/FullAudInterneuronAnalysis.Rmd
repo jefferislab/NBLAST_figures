@@ -4,7 +4,7 @@ output: html_document
 ---
 
 ```{r startup, echo=FALSE,message=FALSE,warning=FALSE}
-source("R/StartUp.R", chdir=TRUE)
+source("../../R/StartUp.R", chdir=TRUE)
 opts_chunk$set(message=FALSE, fig.height=18.130/25.4, fig.width=30.217/25.4, dpi=300, dev='png', fig.path="figure/")
 knit_hooks$set(custom.plot = hook_rgl) #Needed to embed plots
 par3dmini=c("FOV", "userMatrix", "scale", "zoom")

@@ -8,8 +8,8 @@ Visual projection neurons fig
 
 Showing unilateral and bilateral VPNs.
 ```{r startup, echo=FALSE,message=FALSE,warning=FALSE}
-source("R/StartUp.R")
-source("R/DivideVPNsCentralBrain.R")
+source("../../R/StartUp.R")
+source("../../R/DivideVPNsCentralBrain.R")
 opts_chunk$set(message=FALSE, fig.height=21.8/25.4, fig.width=36.334/25.4, dev='png', dpi=300,fig.path="figure/")
 
 knit_hooks$set(custom.plot = hook_rgl) #Needed to embed plots
@@ -287,7 +287,7 @@ Generate new score matrix based on neuron segments in AOTU and PVLP.
 ```
 
 ```{r new_scoring_matrix_aotu, cache=TRUE}
-load(file="R/scoremat.vpn_aotu.rda")
+load(file="../../R/scoremat.vpn_aotu.rda")
 gn2=names(which(sapply(g123_aotu_pvlp,function(x) nrow(x$points))>5)) # exclude neurons with less than 5 points
 #image(scoremat.vpn_aotu[gn2,gn2])
 ```
