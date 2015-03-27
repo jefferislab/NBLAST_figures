@@ -18,7 +18,7 @@ par3dmini=c("FOV", "userMatrix", "scale", "zoom")
 
 ```{r remote-score-matrix}
 VPN_score_mat <- load_si_data('VPN_score_mat.rds')
-options(flycircuit.scoremat=VPN_score_mat)
+options(flycircuit.scoremat="VPN_score_mat")
 ```
 
 Hierarchical clustering for unilateral VPNS. Dividing into 21 groups.

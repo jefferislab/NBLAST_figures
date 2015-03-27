@@ -32,7 +32,7 @@ par3dmini=c("FOV", "userMatrix", "scale", "zoom")
 
 ```{r remote-score-matrix}
 KC_score_mat <- load_si_data("KC_score_mat.rds")
-options(flycircuit.scoremat=KC_score_mat)
+options(flycircuit.scoremat="KC_score_mat")
 ```
 
 Finding the Kenyon Cells

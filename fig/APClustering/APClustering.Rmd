@@ -19,7 +19,7 @@ nopen3d()
 
 ```{r remote-score-matrix}
 # This score matrix is loaded in DivideVPNsCentralBrain.R
-options(flycircuit.scoremat=AP_score_mat)
+options(flycircuit.scoremat="AP_score_mat")
 ```
 
 Use affinity propagaton to cluster the Flycircuit neurons.

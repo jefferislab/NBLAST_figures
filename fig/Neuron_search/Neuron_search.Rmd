@@ -16,7 +16,7 @@ par3dmini=c("FOV", "userMatrix", "scale", "zoom")
 
 ```{r remote-score-matrix}
 neuron_search_score_mat <- load_si_data("neuron_search_score_mat.rds")
-options(flycircuit.scoremat=neuron_search_score_mat)
+options(flycircuit.scoremat="neuron_search_score_mat")
 ```
 
 Scale bar

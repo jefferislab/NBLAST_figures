@@ -47,7 +47,7 @@ opneuron2=structure(list(FOV = 0, userMatrix = structure(c(1, 0, 0, 0,
 
 ```{r remote-score-matrix}
 auditory_neurons_score_mat <- load_si_data("auditory_neurons_score_mat.rds")
-options(flycircuit.scoremat=auditory_neurons_score_mat)
+options(flycircuit.scoremat="auditory_neurons_score_mat")
 ```
 
 AMMC-AMMC PN1 (GadMARCM-F000248_seg002)
