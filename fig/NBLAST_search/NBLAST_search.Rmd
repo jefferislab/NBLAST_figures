@@ -40,6 +40,12 @@ par3d(op)
 plot3d("FruMARCM-M001189_seg001", col='black', lwd=3, soma=T)
 ```
 
+Use a remote score matrix restricted to auditory neurons
+```{r remote-score-matrix}
+auditory_neurons_score_mat <- load_si_data("auditory_neurons_score_mat.rds")
+options(flycircuit.scoremat="auditory_neurons_score_mat")
+```
+
 Plot the query and the top hit.
 ```{r FruMARCM-M001189_seg001_blackandTophit, rgl=TRUE, cache=TRUE}
 clear3d()
