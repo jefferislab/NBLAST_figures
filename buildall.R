@@ -7,18 +7,20 @@ library(flycircuit)
 data_dir=getOption('flycircuit.datadir')
 stopifnot(!is.null(data_dir))
 
-## save ourselves a lot of time by pre-fetching the neuron data we need
-# first download to temp location
-tf=tempfile(fileext = '.zip')
-# nb curl required for https, -L follows github redirect
-download.file("https://github.com/jefferislab/dpscanon/archive/master.zip", tf,
-              method = 'curl', extra="-L")
-# unzip to data dir
-unzip(tf, exdir = data_dir)
-# move files up one level
-ziprd=file.path(data_dir,'dpscanon-master')
-files_to_move=dir(ziprd, full.names = TRUE)
-file.rename(files_to_move, file.path(data_dir, basename(files_to_move)))
+if(!file.exists(file.path(data_dir, 'dpscanon.rds'))) {
+	## save ourselves a lot of time by pre-fetching the neuron data we need
+	# first download to temp location
+	tf=tempfile(fileext = '.zip')
+	# nb curl required for https, -L follows github redirect
+	download.file("https://github.com/jefferislab/dpscanon/archive/master.zip", tf,
+	              method = 'curl', extra="-L")
+	# unzip to data dir
+	unzip(tf, exdir = data_dir)
+	# move files up one level
+	ziprd=file.path(data_dir,'dpscanon-master')
+	files_to_move=dir(ziprd, full.names = TRUE)
+	file.rename(files_to_move, file.path(data_dir, basename(files_to_move)))
+}
 
 root_dir <- getwd()
 rmarkdown_files <- dir(pattern=".Rmd", recursive=TRUE)
