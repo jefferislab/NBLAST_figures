@@ -1,5 +1,5 @@
 language: c
-script: ./buildall.sh
+script: ./buildall.R
 before_install:
   - curl -OL http://raw.github.com/craigcitro/r-travis/master/scripts/travis-tool.sh
   - chmod 755 ./travis-tool.sh
