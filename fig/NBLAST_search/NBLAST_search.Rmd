@@ -88,11 +88,10 @@ plot3d(malt1, lwd=3, soma=T, col='black')
 Plot neuron and selected tract.
 ```{r mALT_query, rgl=TRUE, cache=TRUE}
 load(file="../../R/malt1tract.rda")
-fc_neuron(malt1)
 clear3d()
 par3d(op)
 plot3d(malt1tract, col='red', lwd=5)
-plot3d(malt1, lwd=3, soma=T, col='black')
+plot3d("fru-F-300036", lwd=3, soma=T, col='black')
 ```
 
 Load dpscanon.
