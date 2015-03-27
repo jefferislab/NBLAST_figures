@@ -15,7 +15,7 @@ install:
   - chmod +x $HOME/pandoc/pandoc
   - pandoc --version
 
-  - ./travis-tool.sh r_binary_install rgl igraph devtools filehash RcppEigen plyr doMC ggplot2 knitr dendroextras spam apcluster bigmemory ff
+  - ./travis-tool.sh r_binary_install rgl igraph devtools filehash RcppEigen plyr doMC ggplot2 knitr dendroextras spam apcluster bigmemory ff yaml nabor
   - ./travis-tool.sh r_install mixOmics
   - ./travis-tool.sh install_github rstudio/rmarkdown jefferis/nat jefferislab/nat.nblast jefferislab/nat.templatebrains jefferislab/nat.flybrains jefferis/flycircuit
 
