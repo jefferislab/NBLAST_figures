@@ -91,7 +91,7 @@ load(file="../../R/malt1tract.rda")
 clear3d()
 par3d(op)
 plot3d(malt1tract, col='red', lwd=5)
-plot3d("fru-F-300036", lwd=3, soma=T, col='black')
+plot3d("ChaMARCM-F001159_seg001", lwd=3, soma=T, col='black')
 ```
 
 Load dpscanon.
