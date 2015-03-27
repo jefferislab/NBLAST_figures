@@ -24,6 +24,8 @@ if(!file.exists(file.path(data_dir, 'dpscanon.rds'))) {
 
 root_dir <- getwd()
 rmarkdown_files <- dir(normalizePath("fig"), pattern=".Rmd", recursive=TRUE, full.names = T)
+# drop troublesome file for the moment
+rmarkdown_files=rmarkdown_files[!grepl("NBLAST_search.Rmd", rmarkdown_files)]
 built_files <- sapply(rmarkdown_files, function(x) { setwd(dirname(x)); render(basename(x), envir=globalenv()) })
 
 # built_files will not exist if a file failed to build
