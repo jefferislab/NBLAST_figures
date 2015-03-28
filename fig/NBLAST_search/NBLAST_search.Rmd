@@ -254,7 +254,7 @@ plot3d(R18C12.FCWB,lwd=3,col='black')
 
 Blast the trace against the FC neurons and plot the top 3 hits
 ```{r blast_GAL4_FC.norm, cache=TRUE, rgl=TRUE}
-R18C12.fc.sc.norm=nblast(dotprops(R18C12.FCWB,resample=1,k=5), normalisation="mean",target=dpscanon)
+R18C12.fc.sc.norm=nblast(dotprops(R18C12.FCWB,resample=1,k=5), normalised = T,target=dpscanon)
 R18C12.fc.sc.norm.top3=dps[names(sort(R18C12.fc.sc.norm,dec=T))[1:3]]
 clear3d()
 op=structure(list(FOV = 0, userMatrix = structure(c(1, 0, 0, 0, 
