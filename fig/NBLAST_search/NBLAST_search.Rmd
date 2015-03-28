@@ -94,9 +94,14 @@ plot3d(malt1tract, col='red', lwd=5)
 plot3d("ChaMARCM-F001159_seg001", lwd=3, soma=T, col='black')
 ```
 
-Load dpscanon.
+Load some neurons to blast. Typically we would use all the neurons in the 
+database, but to save time for these figures, we restrict to ~800 olfactory PNs.
 ```{r read_dps, cache=TRUE}
-dpscanon=read.neurons(dps)
+# all neurons
+# dpscanon=read.neurons(dps)
+# instead select PNs
+pnids=subset(annotation, annotation_class=="NeuronSubType" )$neuron_idid
+dpscanon=subset(dps,idid %in% pnids)
 ```
 
 Blast tract against dps and plot top 10 hits.
