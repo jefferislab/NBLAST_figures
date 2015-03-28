@@ -169,6 +169,11 @@ plot3d(prune(oalttop10, oact.vpn, maxdist=5), lwd=3)
 Panel D: tracing from pMP-e
 ----------------
 
+
+```{r dps}
+dpscanon=read.neurons(dps)
+```
+
 Convert stalk to dotprops and plot.
 ```{r P1stalk, cache=TRUE, rgl=TRUE}
 p1stalk=read.neuron("P1_stalk_skel.am")
