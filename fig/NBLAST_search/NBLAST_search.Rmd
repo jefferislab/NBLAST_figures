@@ -292,7 +292,7 @@ hpproj.FCWB.dps.canon=readRDS("../../R/hpproj.FCWB.dps.canon.rds")
 Search with one of the previous top hits against all traces. 
 ```{r neuron_to_traces_query, cache=TRUE, rgl=TRUE}
 ntoblast=names(R18C12.fc.sc.norm.top3)[3]
-tracesc=nblast(query=dps[[ntoblast]], target=hpproj.FCWB.dps.canon, normalisation="mean")
+tracesc=nblast(query=dps[[ntoblast]], target=hpproj.FCWB.dps.canon, normalised = T)
 tracesctop10=names(sort(tracesc, dec=T))[1:10]
 clear3d()
 par3d(op)
