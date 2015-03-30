@@ -42,6 +42,13 @@ When this process has finished, a web page containing text and images will be pr
    which you can rotate and zoom; this will likely reveal additional information beyond
    the static projection view in the HTML report created earlier.
 
+## Travis
+We are presently running an automated build of these figures using the online [travis ci](https://travis-ci.org/jefferislab/NBLAST_figures) service. This confirms that the
+figures can be built completely independently of our own computer setups. If you wish
+you could fork the repository and switch on travis for your fork and use that to build
+new variants of the figures. Don't forget to update the url for the badge at the top 
+of this file if you want it to reflect the status of your fork.
+
 ## Contact
 
 Please feel free to:
