@@ -27,4 +27,10 @@ rmarkdown_files <- dir(normalizePath("fig"), pattern=".Rmd", recursive=TRUE, ful
 built_files <- sapply(rmarkdown_files, function(x) { setwd(dirname(x)); render(basename(x), envir=globalenv()) })
 
 # built_files will not exist if a file failed to build
-if(!exists("built_files")) quit(status=1) else quit(status=0)
+if(!exists("built_files")) quit(status=1) else {
+	# make a zip file that will be uploaded to github
+	# note use of -j option to junk paths so that .html files are at the
+	# root of the zip file
+	zip('figures.zip', built_files, flags='-r9Xj')
+	quit(status=0)
+}
