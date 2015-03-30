@@ -31,6 +31,11 @@ if(!exists("built_files")) quit(status=1) else {
 	# make a zip file that will be uploaded to github
 	# note use of -j option to junk paths so that .html files are at the
 	# root of the zip file
-	zip('figures.zip', built_files, flags='-r9Xj')
+	setwd(root_dir)
+	message("Creating figures.zip in: ", root_dir)
+	rval=zip('figures.zip', built_files, flags='-r9Xj')
+	message("zip return value: ", rval)
+	message("zip info:")
+	nat.utils::zipinfo("figures.zip")
 	quit(status=0)
 }
