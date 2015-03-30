@@ -1,24 +1,23 @@
 language: c
-script: ./buildall.R
+script: "./buildall.R"
 before_install:
   - curl -OL http://raw.github.com/craigcitro/r-travis/master/scripts/travis-tool.sh
   - chmod 755 ./travis-tool.sh
-  - ./travis-tool.sh bootstrap
+  - "./travis-tool.sh bootstrap"
   - bash <(wget -q -O- http://neuro.debian.net/_files/neurodebian-travis.sh)
   - sudo apt-get install cmtk --no-install-recommends
 install:
-  # Install binary pandoc from RStudio
   - export PATH="$HOME/pandoc:$PATH"
   - mkdir $HOME/pandoc
   - curl -O https://s3.amazonaws.com/rstudio-buildtools/pandoc-1.12.3.zip
   - unzip -j pandoc-1.12.3.zip pandoc-1.12.3/linux/debian/x86_64/pandoc -d $HOME/pandoc
   - chmod +x $HOME/pandoc/pandoc
   - pandoc --version
-
-  - ./travis-tool.sh r_binary_install rgl igraph devtools filehash RcppEigen plyr doMC ggplot2 knitr spam apcluster bigmemory ff yaml
-  - ./travis-tool.sh r_install mixOmics dendroextras nabor
-  - ./travis-tool.sh install_github rstudio/rmarkdown jefferis/nat jefferislab/nat.nblast jefferislab/nat.templatebrains jefferislab/nat.flybrains jefferis/flycircuit
-
+  - "./travis-tool.sh r_binary_install rgl igraph devtools filehash RcppEigen plyr doMC
+    ggplot2 knitr spam apcluster bigmemory ff yaml"
+  - "./travis-tool.sh r_install mixOmics dendroextras nabor"
+  - "./travis-tool.sh install_github rstudio/rmarkdown jefferis/nat jefferislab/nat.nblast
+    jefferislab/nat.templatebrains jefferislab/nat.flybrains jefferis/flycircuit"
   - sh -e /etc/init.d/xvfb start
 notifications:
   email:
