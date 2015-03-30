@@ -25,4 +25,11 @@ notifications:
     on_failure: change
 env:
   global:
-    - DISPLAY=:99.0
+  - DISPLAY=:99.0
+deploy:
+  provider: releases
+  api_key:
+    secure: i5sIGknfmdHlPua7h3PRFloHb0sDGQR5Xb+OK8skJsxRqKV42xnGtOP3TCW09/wdFMOseAqkexzFUUB7VUJV8snpfQkMKanHeWBBDTaFSk85+3DOLahIA4QTTiZt4GJyRSrkQEemIbeqWRqood1awZq35ky0osPtxeGyRu0l/zY=
+  file: figures.zip
+  on:
+    repo: jefferislab/NBLAST_figures
