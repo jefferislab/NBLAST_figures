@@ -16,7 +16,8 @@ Some scripts depend on an installation of the image registration toolkit CMTK in
 
 1. Install R from http://www.r-project.org/ (you need at least R 3.0.2, latest R recommended).
 2. Install RStudio from http://www.rstudio.com.
-3. Optionally install CMTK from http://www.nitrc.org/projects/cmtk
+3. Optionally on MacOS X install XQuartz to use X11 for 3D visualisation (this used to be packaged with MacOS X but is now available only from http://xquartz.macosforge.org/)
+4. Optionally install CMTK from http://www.nitrc.org/projects/cmtk (to transform some neurons)
 
 ## Setting Up
 
@@ -40,7 +41,6 @@ When this process has finished, a web page containing text and images will be pr
   3. This includes interactive 3D renderings of the plots of neurons
    which you can rotate and zoom; this will likely reveal additional information beyond
    the static projection view in the HTML report created earlier.
-
 
 ## Contact
 
