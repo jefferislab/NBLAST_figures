@@ -4,3 +4,6 @@
 fig/*/*_cache
 fig/*/figure
 *.md
+packrat/lib*/
+packrat/src/
+packrat/bundles/
