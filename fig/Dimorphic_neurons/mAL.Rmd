@@ -10,13 +10,13 @@ mAL neurons were the first group of neurons that were clearly demonstrated to be
 There are approximately 25-30 neurons in this cell group in males and about 5 cells in females.
 
 # Setting Up
-```{r startup, warning=FALSE, echo=FALSE}
-suppressMessages(source("/GD/LMBD/Papers/2012NBlast/R/StartUp.R"))
+```{r startup, warning=FALSE, message=FALSE, echo=FALSE}
+source("../../R/StartUp.R", chdir = TRUE)
 
 # set up for rgl plots
 dir.create('figure')
 opts_chunk$set(dev=c('png'), dpi=600, fig.height=9.75/25.4, fig.width=15.15/25.4, fig.path="figure/")
-knit_hooks$set(rgl = hook_rgl2) #Needed to embed plots
+knit_hooks$set(rgl = hook_rgl) #Needed to embed plots
 par3dmini=c("FOV", "userMatrix", "scale", "zoom")
 nopen3d()
 ```
@@ -39,6 +39,11 @@ plot3d("FruMARCM-M001715_seg001", soma=T, col='black', lwd=4)
 ```
 
 Blast this query neuron against all for mean scores.
+Use a remote score matrix restricted to mAL neurons to save download time:
+```{r remote-score-matrix}
+malscoremat <- load_si_data("malscoremat.rds")
+options(flycircuit.scoremat="malscoremat")
+```
 
 Plot a histogram of scores and collect neurons with scores over 0.2.
 ```{r mALsearch, cache=TRUE, dev='png', fig.width=30.7385/25.4*2, fig.height=21.185/25.4*2}
