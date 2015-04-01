@@ -1,0 +1,242 @@
+---
+title: "Classic\_clusters\_PN"
+output: html_document
+---
+
+Classical neurons - olfactory projection neurons
+========================================================
+
+Start-up.
+```{r echo=FALSE,message=FALSE,warning=FALSE}
+source("../../R/StartUp.R", chdir = TRUE)
+library(Heatplus) # for picketPlot
+
+opts_chunk$set(message=FALSE,fig.height=30.339/25.4, fig.width=50.734/25.4, dev='png',dpi=300, fig.path="figure/")
+knit_hooks$set(custom.plot = hook_rgl2) #Needed to embed plots
+par3dmini=c("FOV", "userMatrix", "scale", "zoom")
+```
+
+Collect all uniglomerular PN's
+```{r Collect_upns, cache=TRUE}
+upns=fc_gene_name(subset(annotation,annotation_class=='NeuronSubType' & grepl('uPN',text))$neuron_idid)
+#Keep only the ones in good_images
+upns=intersect(upns, good_images)
+```
+
+Remove 2 VAsomething and 1 VP? neurons.
+```{r remove_bad_upns, cache=TRUE}
+#dput(fc_gene_name(subset(annotation, annotation_class=='ALGlomerulus' & text=='VAsomething')$neuron_idid))
+#c("DvGlutMARCM-F078_seg1", "DvGlutMARCM-F1323_seg3")
+#dput(fc_gene_name(subset(annotation, annotation_class=='ALGlomerulus' & text=='VP?')$neuron_idid))
+"DvGlutMARCM-F1364_seg1"
+upns=setdiff(upns, c("DvGlutMARCM-F078_seg1", "DvGlutMARCM-F1323_seg3", "DvGlutMARCM-F1364_seg1"))
+length(upns)
+```
+
+Sort glomeruli into good or bad: the former if we have more than one neuron of that class, the latter if we only have one.
+```{r goodglom_and_badglom, cache=TRUE}
+badgloms=names(which(table(glomdf$text)==1))
+badgloms
+goodgloms=names(which(table(glomdf$text)>1))
+goodgloms
+```
+
+Plot same class T or F
+----------------
+
+Using the data in upnstophits_norm, which has the query, target, query and target class, if the pair is reciprocal (duplicated), glomerulus and if the neurons are in the same class (TRUE or FALSE, or NA).
+
+There are `r nrow(subset(upnstophits_norm, duplicated(qp)))` reciprocal pairs, bringing the total of neuron pairs to `r nrow(subset(upnstophits_norm, !duplicated(qp)))`.
+
+Look at the 3 groups of same.class: TRUE, FALSE and NA.
+
+There are `r nrow(subset(upnstophits_norm, same.class==FALSE & !duplicated(qp)))` cases of non-matches (same.class==FALSE cases).
+
+There are `r nrow(subset(upnstophits_norm, same.class==TRUE & !duplicated(qp)))` cases of non-matches (same.class==FALSE cases).
+
+The FALSE and NA category contains both the wrong uPN's, oligo PNs and 1 non PN neuron.
+
+Changing the labels: for all mismatches, labelling hits (same.class) with False if it's matched to the wrong uPN; True if it's matched to the right uPN and Not uPN if it's matched to an oligo or non uPN neuron. There are 2 cases of NA's that have to be changed as well.
+```{r labelling_hits, cache=TRUE}
+upnstophits_plot=upnstophits_norm
+#from the same.class==FALSE
+upnstophits_plot[which(upnstophits_plot$query=="ChaMARCM-F000192_seg001"), 'same.class']="Not uPN"
+upnstophits_plot[which(upnstophits_plot$query=="FruMARCM-F002090_seg001"), 'same.class']="Not uPN"
+upnstophits_plot[which(upnstophits_plot$query=="GadMARCM-F000475_seg001"), 'same.class']="Not uPN"
+upnstophits_plot[which(upnstophits_plot$query=="DvGlutMARCM-F004348_seg001"), 'same.class']="Not uPN"
+upnstophits_plot[which(upnstophits_plot$query=="DvGlutMARCM-F002923_seg001"), 'same.class']="Not uPN"
+#the 2 NA cases
+upnstophits_plot[which(is.na(upnstophits_plot$same.class)), 'same.class']="Not uPN"
+```
+
+So, in the mismatches there are `r nrow(subset(upnstophits_plot, same.class=="Not uPN" & !duplicated(qp)))` to non uPN neurons
+```{r same.class_NotuPN, cache=TRUE}
+subset(upnstophits_plot, same.class=="Not uPN" & !duplicated(qp) & query.class%in%badgloms, select=c("target", "nscore", "fwd", "rev", "query.class", "target.class"))
+subset(upnstophits_plot, same.class=="Not uPN" & !duplicated(qp) & query.class%in%goodgloms, select=c("target", "nscore", "fwd", "rev", "query.class", "target.class"))
+```
+
+3 of these are cases is which we only have one example of that neuron (in badgloms). In two cases, neurons were matched to oligos that innervate nerby regions. In one case the neuron is a bilateral V glom, which is matched to a big bilateral neuron.
+In the other 4 cases of the goodlgoms the neurons are matched to oligos that also innervate that glomerulus, even though we have more example of the neurons.
+
+For the mismatch with uPN's: there are `r nrow(subset(upnstophits_plot, same.class=="FALSE" & !duplicated(qp)))` cases. `r nrow(subset(upnstophits_plot, same.class=="FALSE" & !duplicated(qp) & query.class%in%badgloms))` of them are with unique neurons, for `r nrow(subset(upnstophits_plot, same.class=="FALSE" & !duplicated(qp) & query.class%in%goodgloms))` we have more examples and NBLAST should have done better.
+```{r same.class_FALSE, cache=TRUE}
+subset(upnstophits_plot, same.class=="FALSE" & !duplicated(qp) & query.class%in%badgloms, select=c("target", "nscore", "fwd", "rev", "query.class", "target.class"))
+k=subset(upnstophits_plot, same.class=="FALSE" & !duplicated(qp) & query.class%in%badgloms, select=c("query.class", "target.class"))
+dput(paste(k$query.class, k$target.class, sep=" to "))
+subset(upnstophits_plot, same.class=="FALSE" & !duplicated(qp) & query.class%in%goodgloms, select=c("target", "nscore", "fwd", "rev", "query.class", "target.class"))
+```
+
+In the badglom cases, the neuron was matched to a neuron that innervates a nearby glomerulus: "DC3 to VA1d", "VL2p to VL2a", "DL4 to DL1", "DM1 to DM5", "VM3 to VC4", "DC2 to DA2".
+
+For the goodglom cases, the neuron was matched to a neuron that innervates a nearby glomerulus: DL2v to DL2d and VM5d to VM5v.
+
+Taking into account only neurons in goodgloms: `r nrow(subset(upnstophits_plot, same.class=="Not uPN" & !duplicated(qp) & query.class%in%goodgloms))` cases of match with non-uPN and `r nrow(subset(upnstophits_plot, same.class=="FALSE" & !duplicated(qp) & query.class%in%goodgloms))` matched to the wrong uPN class.
+```{r goodglom_only, cache=TRUE}
+subset(upnstophits_plot, same.class=="Not uPN" & !duplicated(qp) & query.class%in%goodgloms, select=c("target", "nscore", "fwd", "rev", "query.class", "target.class"))
+subset(upnstophits_plot, same.class=="FALSE" & !duplicated(qp) & query.class%in%goodgloms, select=c("target", "nscore", "fwd", "rev", "query.class", "target.class"))
+```
+
+Non-uPNs are matches to oligos that inneravte the same glomerulus as the query, while wrong matches are to very near glomerulus (DL2v vs DL2d and VM5v vs VM5d).
+
+Plot the 3 groups: True, False and Not uPN, with fwd.norm and rev.norm
+
+```{r SimilarPN-sameclassWithNA, fig.width=96.6/25.4*2.5, fig.height=57/25.4*2.5, cache=TRUE}
+#change labels for plot
+upnstophits_plot$same.class=factor(upnstophits_plot$same.class)
+levels(upnstophits_plot$same.class)<-c("False", "Not uPN", "True") #modify legend to have 3 cases
+par(mar=c(0,2,0,0))
+qq=ggplot(data=subset(upnstophits_plot, !duplicated(qp)), aes(x=rev.norm, y=fwd.norm))+ geom_point(aes(colour=same.class), size=5, alpha=0.5) + labs(x="Reverse score", y="Forward score", colour="Same class")
+qq+theme(axis.text.x=element_text(size=22), axis.text.y=element_text(size=22), axis.title.x=element_text(size=26), axis.title.y=element_text(size=26), legend.text=element_text(size=26), legend.title=element_text(size=26), legend.position=c(0.87, 0.15))
+```
+
+Nearest neighbour interpolation
+--------------------------------
+
+Get numbers for nearest neighbour interpolation.
+
+Subset glomdf to include only upnswehave and neurons in classes with more than 3 neurons).
+```{r nearest_neighbour, cache=TRUE}
+load(file="/GD/LMBD/Papers/2012NBlast/R/tractglomdf.rda")
+upnsnotdl2=subset(upnstophits_norm, query.class!="DL2v" & query.class!="DL2d")
+upnswehave=as.character(upnsnotdl2$query)
+length(upnswehave)
+goodgloms=names(which(table(tractglomdf$Tract.Glom)>3))
+goodglomdf=subset(tractglomdf,Tract.Glom%in%goodgloms & fc_gene_name(neuron_idid)%in%upnswehave)
+#Collect top 3 hits + query
+scs=fc_nblast(fc_gene_name(goodglomdf$neuron_idid), fc_gene_name(goodglomdf$neuron_idid), norm="mean")
+topnames=sapply(fc_gene_name(goodglomdf$neuron_idid), function(x) names(sort(scs[,x], dec=T)[1:4]))
+fc_tractglom<-function(x){  
+  idids=fc_idid(x)
+  gloms<-subset(tractglomdf, neuron_idid%in%idids)$Tract.Glom
+  gloms
+  }
+x=apply(topnames, 2, fc_tractglom)
+z=table(apply(x,2,function(y) sum(y[-1]==y[1])))
+cumsum(rev(z)) # n for all 3 matches, at least 2 matches and at least one in top 3
+cumsum(rev(z))/nrow(goodglomdf) *100 # %
+table(apply(x,2,function(y) sum(y[2]==y[1]))) #n for when top hit matches query
+# the 3 mismatches are
+apply(topnames[,which(x[1,]!=x[2,])], 2, fc_tractglom)
+```
+
+Dendrogram and picket plot
+----------------------------
+
+Note: the picket plot is now not shown on the figure.
+
+Cluster the upns by hierarchical clustering. Remove the DL2 neurons prior to this (DL2d and DL2v) because they are disproportionately represented in the dataset and could bias the results.
+
+Dendogram showing the neuron class. k=35 separates neurons into classes, i.e., each group innervates different glomeruli.
+```{r upns_dendrogram, fig.width=297/25.4, fig.height=65/25.4, cache=TRUE}
+pnhc=hclustfc(upnswehave)
+pnhc_h=pnhc
+pnhc_h$height=sqrt(pnhc_h$height)
+pnhc_hd=colour_clusters(pnhc_h, h=height_for_ngroups(pnhc_h, k=35), groupLabels=as.integer)
+labels(pnhc_hd)<-upnsnotdl2[labels(pnhc_hd),'query.class']
+par(mar=c(2,3,0,0))
+par(cex=0.5)
+plot(pnhc_hd, lwd=0.5, cex.axis=1.5)
+abline(h=height_for_ngroups(pnhc_h, k=35), lty='dashed')
+height_for_ngroups(pnhc_h, k=35)
+```
+
+Make a split plot showing the dendrogram  and the picketplot, which shows the glomeruli, neuroblast origin and tract.
+```{r pnhc_noDL2_picketplot-16GroupsAndGlomAndGroupLab-NbTract.scale, fig.width=297/25.4, fig.height=160/25.4, cache=TRUE}
+layout(matrix(1:2,ncol=1,nrow=2))
+par(mar=c(1.7, 11, 1, 0))
+par(cex=0.5)
+plot(pnhc_hd,lwd=.5, cex.axis=1.5)
+abline(h=height_for_ngroups(pnhc_h, k=35), lty='dashed')
+picketPlot(picketplotdfshort[labels(pnhc_h),],grp=slice(pnhc_hd,h=height_for_ngroups(pnhc_h, k=35)),grpcol=rainbow(n=35, alpha=0.3))
+```
+
+Plot all upns used in the dendrogram coloured by dendrogram group.
+```{r Plot3d_uPNNotDl2, custom.plot=TRUE, cache=TRUE}
+nopen3d()
+op=structure(list(FOV = 0, userMatrix = structure(c(1, 0, 0, 0, 
+0, -1, 0, 0, 0, 0, -1, 0, 1.29680967820684, 2.26185450224706, 
+0, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.547308325767517), .Names = c("FOV", 
+"userMatrix", "scale", "zoom"))
+par3d(op)
+for(i in 1:35) {
+  plot3d(subset(pnhc_h, k=35, groups=i), col=rainbow(n=35, alpha=0.3)[i], soma=T)
+}
+```
+
+Plot neurons of the first 5 dendrogram groups. One plot of each group plus one plot with all.
+
+Group 1:
+```{r PNgroup1, custom.plot=TRUE, cache=TRUE}
+clear3d()
+plot3d(FCWB)
+opgroup=structure(list(FOV = 0, userMatrix = structure(c(1, 0, 0, 0, 
+0, -1, 0, 0, 0, 0, -1, 0, -76.1611144774601, -40.8901171571298, 
+0, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.2165886759758), .Names = c("FOV", 
+"userMatrix", "scale", "zoom"))
+par3d(opgroup)
+plot3d(subset(pnhc_h, h=height_for_ngroups(pnhc_h, k=35), groups=1), col=rainbow(n=35, alpha=0.3)[1], soma=T)
+```
+
+Group 2:
+```{r PNgroup2, custom.plot=TRUE, cache=TRUE}
+clear3d()
+plot3d(FCWB)
+par3d(opgroup)
+plot3d(subset(pnhc_h, h=height_for_ngroups(pnhc_h, k=35), groups=2), col=rainbow(n=35, alpha=0.3)[2], soma=T)
+```
+
+Group 3:
+```{r PNgroup3, custom.plot=TRUE, cache=TRUE}
+clear3d()
+plot3d(FCWB)
+par3d(opgroup)
+plot3d(subset(pnhc_h, h=height_for_ngroups(pnhc_h, k=35), groups=3), col=rainbow(n=35, alpha=0.3)[3], soma=T)
+```
+
+Group 4:
+```{r PNgroup4, custom.plot=TRUE, cache=TRUE}
+clear3d()
+plot3d(FCWB)
+par3d(opgroup)
+plot3d(subset(pnhc_h, h=height_for_ngroups(pnhc_h, k=35), groups=4), col=rainbow(n=35, alpha=0.3)[4], soma=T)
+```
+
+Group 5:
+```{r PNgroup5, custom.plot=TRUE, cache=TRUE}
+clear3d()
+plot3d(FCWB)
+par3d(opgroup)
+plot3d(subset(pnhc_h, h=height_for_ngroups(pnhc_h, k=35), groups=5), col=rainbow(n=35, alpha=0.3)[5], soma=T)
+```
+
+Plot the 5 groups.
+```{r PNgroup1-5, custom.plot=TRUE, cache=TRUE}
+clear3d()
+plot3d(FCWB)
+par3d(opgroup)
+plot3d(FCWBNP.surf, materials="AL_L", alpha=0.1, col='green')
+plot3d(FCWBNP.surf, materials="LH_L", alpha=0.1, col='blue')
+for(i in 1:5) {
+  plot3d(subset(pnhc_h, k=35, groups=i), col=rainbow(n=35, alpha=0.3)[i], soma=T)
+}
+```
