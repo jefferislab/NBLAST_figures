@@ -129,7 +129,9 @@ strong topographic correlation. Group 1 neurons that have an ispilateral process
 
 Plot two male mAL neurons and use those to select the regions excluding the terminal arbors.
 
-Use prune to remove the selected3d space from the neurons, i.e., keep only the terminal arbors. Clean it up to remove extra segments.
+We manually used prune to remove the selected3d space from the neurons, i.e., keep only the terminal arbours. 
+Then cleaned it up to remove extra segments. This is what we did, but for now we
+will just load the saved object.
 
 ```{r hcmal-M.prepare_prune, eval=FALSE}
 clear3d()
@@ -147,12 +149,12 @@ s3=select3d()
 pruned2=nlapply(pruned,subset,Negate(s1))
 pruned2=nlapply(pruned2,subset,Negate(s2))
 pruned2=nlapply(pruned2,subset,Negate(s3))
-save(pruned2, file="/GD/LMBD/Papers/2012NBlast/R/pruned2.rda")
+saveRDS(pruned2, file="/GD/LMBD/Papers/2012NBlast/R/pruned2.rds")
 ```
 
 Plot the selected neurites.
 ```{r hcmal-M.prune, cache=TRUE, rgl=TRUE}
-load("/GD/LMBD/Papers/2012NBlast/R/pruned2.rda")
+pruned2=load_si_data("/GD/LMBD/Papers/2012NBlast/R/pruned2.rds")
 par3d(op)
 plot3d(pruned2, col='black')
 plot3d(labels(hcmal.m), col='lightgrey')
