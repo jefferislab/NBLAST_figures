@@ -15,7 +15,7 @@ install:
   - pandoc --version
   - "./travis-tool.sh r_binary_install rgl igraph devtools filehash RcppEigen plyr doMC
     ggplot2 knitr spam apcluster bigmemory ff yaml"
-  - "./travis-tool.sh r_install mixOmics dendroextras nabor"
+  - "./travis-tool.sh r_install mixOmics dendroextras nabor Heatplus"
   - "./travis-tool.sh install_github rstudio/rmarkdown jefferis/nat jefferislab/nat.nblast
     jefferislab/nat.templatebrains jefferislab/nat.flybrains jefferis/flycircuit"
   - sh -e /etc/init.d/xvfb start
