@@ -185,7 +185,7 @@ op=structure(list(FOV = 0, userMatrix = structure(c(1, 0, 0, 0,
 "userMatrix", "scale", "zoom"))
 par3d(op)
 for(i in 1:35) {
-  plot3d(subset(pnhc_h, k=35, groups=i), col=rainbow(n=35, alpha=0.3)[i], soma=T)
+  plot3d(subset(pnhc_h, k=35, groups=i), col=rainbow(n=35, alpha=0.3)[i], soma=T, skipRedraw=TRUE)
 }
 ```
 
