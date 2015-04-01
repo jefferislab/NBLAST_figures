@@ -1,0 +1,219 @@
+---
+title: "mAL"
+output: html_document
+---
+
+mAL neuron analysis
+================================
+mAL neurons were the first group of neurons that were clearly demonstrated to be sexually dimorphic both at the level of cell number and single cell morphology in a fruitless-dependent manner [kimura 2005].
+
+There are approximately 25-30 neurons in this cell group in males and about 5 cells in females.
+
+# Setting Up
+```{r startup, warning=FALSE, echo=FALSE}
+suppressMessages(source("/GD/LMBD/Papers/2012NBlast/R/StartUp.R"))
+
+# set up for rgl plots
+dir.create('figure')
+opts_chunk$set(dev=c('png'), dpi=600, fig.height=9.75/25.4, fig.width=15.15/25.4, fig.path="figure/")
+knit_hooks$set(rgl = hook_rgl2) #Needed to embed plots
+par3dmini=c("FOV", "userMatrix", "scale", "zoom")
+nopen3d()
+```
+
+Finding the mAL Neurons
+-----------------------------
+
+First let's select neurons that match a starter neuron, 
+[FruMARCM-M001715_seg001](http://flycircuit.tw/modules.php?name=clearpage&op=detail_table&idid=553)
+
+Plot query neuron.
+```{r mALquery, cache=TRUE, rgl=TRUE}
+plot3d(FCWB)
+op=structure(list(FOV = 0, userMatrix = structure(c(1, 0, 0, 0, 
+0, -1, 0, 0, 0, 0, -1, 0, -1.96661369211108, -19.2599412761061, 
+0, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.353547811508179), .Names = c("FOV", 
+"userMatrix", "scale", "zoom"))
+par3d(op)
+plot3d("FruMARCM-M001715_seg001", soma=T, col='black', lwd=4)
+```
+
+Blast this query neuron against all for mean scores.
+
+Plot a histogram of scores and collect neurons with scores over 0.2.
+```{r mALsearch, cache=TRUE, dev='png', fig.width=30.7385/25.4*2, fig.height=21.185/25.4*2}
+malsc=fc_nblast("FruMARCM-M001715_seg001", normalisation='mean')
+# par(mar=c(2,2,0,0.5))
+# hist(malsc,br=100,ylim=c(0,100), main=NULL, xlab=NULL, ylab=NULL, col='black')
+# abline(v=0.2,col='red', lwd=2)
+mals=names(which(malsc>0.2))
+```
+
+Let's cluster those and see what we have.
+```{r malclust, cache=TRUE, fig.width=30.7385/25.4*2, fig.height=21.185/25.4*2, dev.args=list(pointsize=7)}
+hcmal=hclustfc(mals)
+hcmal$height=sqrt(hcmal$height)
+par(mar=c(8,3,0,0))
+hcmal_d=colour_clusters(hcmal,k=2)
+labels(hcmal_d)=fc_neuron(labels(hcmal_d))
+par(mar=c(7,3,1,0))
+plot(hcmal_d)
+```
+
+Looks like they are grouped by sex, which is exactly what one would predict as they are supposed to be sexually dimorphic by morphology. Let's replot with that in mind:
+
+```{r malclust-MF, cache=TRUE, dev='png', fig.height=40.264/25.4, fig.width=144.106/25.4, dev.args=list(pointsize=4)}
+# quick function to find the sex of a neuron
+fc_sex=function(gn) sub(".*-([MF])-.*","\\1",fc_neuron(gn))
+hcmal_d=colour_clusters(hcmal,k=2,col=c("magenta","cyan"))
+labels(hcmal_d)=fc_sex(labels(hcmal_d))
+par(mar=c(2,3,1,0), cex=1.5)
+plot(hcmal_d)
+abline(h=height_for_ngroups(hcmal, k=2), lty='dashed')
+```
+
+So indeed there is a perfect segregation. Now, let's look at those neurons coloured by the two groups (i.e. sex)
+
+```{r hcmalrgl, cache=TRUE, rgl=TRUE}
+clear3d()
+op=structure(list(FOV = 0, userMatrix = structure(c(1, 0, 0, 0, 
+0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1), .Dim = c(4L, 4L)), scale = c(1, 
+1, 1), zoom = 0.771749913692474), .Names = c("FOV", "userMatrix", 
+"scale", "zoom"))
+par3d(op)
+plot3d(hcmal, k=2, col=c("magenta","cyan"), soma=TRUE)
+```
+
+Plot male group only.
+```{r hcmalrgl_maleonly, cache=TRUE, rgl=TRUE}
+clear3d()
+par3d(op)
+plot3d(hcmal, k=2, groups=2, col="cyan", soma=TRUE)
+```
+
+So we can see the main morphological features, that have been reported as dimorphic.
+
+* ipsilateral dendritic branch around the oesophagus in males
+* more lateral and triagular contraleral dendritic branch in females
+* distinctive ring-shaped axon terminals in terminals vs broader axon arbours in males
+
+Going back to the clustering again, it seems that the male neurons are likely divided into two clusters,
+while the female neurons look pretty homogeneous.  We can explore this:
+```{r malclust-M, cache=TRUE, dev='png', fig.width=71.846/25.4, fig.height=40.913/25.4, dev.args=list(pointsize=4)}
+# keep the male cluster only and recluster those neurons alone
+hcmal.m=hclustfc(subset(hcmal,k=2,groups=2))
+hcmal.m$height=sqrt(hcmal.m$height)
+# colour new clusters
+hcmal.m_d=colour_clusters(hcmal.m,k=2, col=c("red", "blue"))
+labels(hcmal.m_d)=NULL
+par(mar=c(1,3,0,0))
+plot(hcmal.m_d)
+```
+
+Now let's look at the male neuron groups:
+```{r hcmalrgl-M,cache=TRUE, rgl=TRUE}
+clear3d()
+par3d(op)
+plot3d(hcmal.m, k=2, soma=TRUE, col=c("red", "blue"))
+```
+
+So it's very clear, amongst the male neurons, there are at least two subclasses, ones with an ipsilateral dendritic innervation and ones without. Intriguingly, when you look at the axon terminal fields, you can see that there is a 
+strong topographic correlation. Group 1 neurons that have an ispilateral process (red) have more ventro-medial-anterior axon arbours while group 2 neurons (cyan) have more dorso-lateral-posterior arbours. Naturally this will have an influence on their potential synaptic partners.
+
+### Subsetting the male neurons using only the terminal arbors
+
+Plot two male mAL neurons and use those to select the regions excluding the terminal arbors.
+
+Use prune to remove the selected3d space from the neurons, i.e., keep only the terminal arbors. Clean it up to remove extra segments.
+
+```{r hcmal-M.prepare_prune, eval=FALSE}
+clear3d()
+plot3d("FruMARCM-M000427_seg001")
+plot3d("FruMARCM-M001089_seg001",col='red')
+dend3d=select3d() 
+axon3d=select3d()
+noaxons=subset(dps[["FruMARCM-M000427_seg001"]],Negate(axon3d))
+noaxonsordend=subset(noaxons,Negate(dend3d))
+plot3d(noaxonsordend,lwd=3,col='green')
+pruned=prune(dps[labels(hcmal.m)],noaxonsordend,keep='far', maxdist=5)
+s1=select3d()
+s2=select3d()
+s3=select3d()
+pruned2=nlapply(pruned,subset,Negate(s1))
+pruned2=nlapply(pruned2,subset,Negate(s2))
+pruned2=nlapply(pruned2,subset,Negate(s3))
+save(pruned2, file="/GD/LMBD/Papers/2012NBlast/R/pruned2.rda")
+```
+
+Plot the selected neurites.
+```{r hcmal-M.prune, cache=TRUE, rgl=TRUE}
+load("/GD/LMBD/Papers/2012NBlast/R/pruned2.rda")
+par3d(op)
+plot3d(pruned2, col='black')
+plot3d(labels(hcmal.m), col='lightgrey')
+```
+
+Collect nblast scores for these segments and cluster the neurons based on these pruned segments.
+
+Divide into 3 groups.
+```{r hcmal-M.prune.hc-dendro,cache=TRUE, fig.width=47.987/25.4, fig.height=53.081/25.4}
+pruned2.dist=nblast_allbyall(pruned2)
+pruned2.hc=nhclust(scoremat=pruned2.dist)
+pruned2.hc$height=sqrt(pruned2.hc$height)
+pruned2.hc_d=colour_clusters(pruned2.hc, k=3, groupLab=as.roman)
+labels(pruned2.hc_d)=NULL
+par(mar=c(1,2,0,0), cex=0.8)
+plot(pruned2.hc_d)
+abline(h=height_for_ngroups(pruned2.hc, k=3), lty='dashed')
+```
+
+```{r hcmal-M.prune.hc,cache=TRUE, rgl=TRUE}
+clear3d()
+par3d(op)
+plot3d(pruned2.hc,k=3, soma=T)
+```
+
+Group 1 only has contralateral dendrites, group 2 has a short ipsilateral arbor, and group 3 has both a ipsi- and contralateral arbors.
+```{r hcmal-M.prune.hc_g1,cache=TRUE, rgl=TRUE}
+clear3d()
+par3d(op)
+plot3d(pruned2.hc,k=3, groups=1, soma=T)
+```
+
+Group 2:
+```{r hcmal-M.prune.hc_g2,cache=TRUE, rgl=TRUE}
+clear3d()
+par3d(op)
+plot3d(pruned2.hc,k=3, groups=2, soma=T)
+```
+
+Group 3:
+```{r hcmal-M.prune.hc_g3,cache=TRUE, rgl=TRUE}
+clear3d()
+par3d(op)
+plot3d(pruned2.hc,k=3, groups=3, soma=T)
+```
+
+Groups 2 and 3:
+```{r hcmal-M.prune.hc_g2-3,cache=TRUE, rgl=TRUE}
+clear3d()
+par3d(op)
+plot3d(pruned2.hc,k=3, groups=2:3, soma=T)
+```
+
+Diving group 1 to look for subtypes: there are 2 clear ones. 
+
+One with long terminal arbors on the dorsal contralateral side (more anterior).
+
+```{r hcmal-M.prune.hc_subtypes-1, cache=TRUE, rgl=TRUE}
+clear3d()
+par3d(op)
+plot3d(hclustfc(subset(pruned2.hc,k=3,groups=1)),k=2, groups=1, col='orange', soma=T)
+```
+
+Another without these long branches, which is more posterior.
+```{r hcmal-M.prune.hc_subtypes-2, cache=TRUE, rgl=TRUE}
+clear3d()
+par3d(op)
+plot3d(hclustfc(subset(pruned2.hc,k=3,groups=1)),k=2, groups=2, col='purple', soma=T)
+```

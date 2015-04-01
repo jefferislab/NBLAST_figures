@@ -1,0 +1,308 @@
+---
+title: "P1 neurons"
+output: html_document
+---
+
+
+Male-specific P1 neuron analysis
+================================
+Male-specific P1 neurons are believed to be key regulators of male sexual behaviour. These neurons
+originate from a single neuroblast (which appears to be present in both sexes) but the action of
+doublesex (in both sexes) results in the selective presence of a group of at least 30 neurons only in
+males [kimura 2008]. 
+
+We have found that some of these neurons are present in females. And also found different subtypes of the male ones.
+
+
+Setting Up
+-------------------
+```{r startup, warning=FALSE}
+suppressWarnings(source("/GD/LMBD/Papers/2012NBlast/R/StartUp.R"))
+# for affinity proagation clustering
+suppressPackageStartupMessages(library(apcluster))
+
+opts_chunk$set(dev=c('png'), message=FALSE, dpi=600, fig.height=1, fig.width=1/0.6, fig.path="figure/")
+knit_hooks$set(rgl = hook_rgl2) #Needed to embed plots
+nopen3d(FOV=0,windowRect = 100 + opts_chunk$get('dpi') * c(0, 0, opts_chunk$get('fig.width'), opts_chunk$get('fig.height')))
+par3dmini=c("FOV", "userMatrix", "scale", "zoom")
+```
+
+
+Finding the P1 Neurons
+----------------------------
+
+Plot of single P1 neuron, showing the male enlarged regions (MER).
+
+First let's plot the MER defined by Cachero, Ostrovsky et al 2010.
+
+```{r MER, rgl=T, cache=TRUE}
+MER=read.hxsurf("tvalsIS2-ascii.surf", RegionChoice = 'Outer')
+MER=xform_brain(MER, ref=FCWB, sample=IS2)
+op=structure(list(FOV = 0, userMatrix = structure(c(1, 0, 0, 0, 
+0, -1, 0, 0, 0, 0, -1, 0, -11.4369961735046, 0.409557479101537, 
+0, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.694575011730194), .Names = c("FOV", 
+"userMatrix", "scale", "zoom"))
+par3d(op)
+plot3d(MER,col='red',alpha=0.3)
+```
+
+and then plot the P1 neuron `r fc_neuron("FruMARCM-M000769_seg002")`.
+
+```{r single_P1, cache=TRUE, rgl=TRUE}
+clear3d()
+plot3d(FCWB)
+op=structure(list(FOV = 0, userMatrix = structure(c(1, 0, 0, 0, 
+0, -1, 0, 0, 0, 0, -1, 0, -12.0171653055846, -48.5492559524481, 
+0, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.288610458374023), .Names = c("FOV", 
+"userMatrix", "scale", "zoom"))
+par3d(op)
+plot3d("FruMARCM-M000769_seg002", col='black', soma=T, lwd=5)
+plot3d(MER,col='red',alpha=0.3)
+```
+
+Plot again in a posterior view.
+```{r single_P1.post, cache=TRUE, rgl=TRUE}
+clear3d()
+plot3d(FCWB)
+op=structure(list(FOV = 0, userMatrix = structure(c(-1, 0, 0, 0, 
+0, -1, 0, 0, 0, 0, 1, 0, 12.0171653055846, -48.5492559524481, 
+0, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.288610458374023), .Names = c("FOV", 
+"userMatrix", "scale", "zoom"))
+par3d(op)
+plot3d("FruMARCM-M000769_seg002", col='black', soma=T, lwd=5)
+plot3d(MER,col='red',alpha=0.3)
+```
+
+
+We've already made a data.frame containing a set of P1 neurons along with other 
+very similar neurons, starting from a search using a tracing of the P1 stalk from
+a neuroblast clone. Let's load that up.
+
+```{r load-p1df, cache=TRUE}
+load('p1df.rda')
+# see below for origin of this
+missing.p1s=c("FruMARCM-M002554_seg001", "FruMARCM-M000150_seg004", "FruMARCM-F001932_seg001", 
+"FruMARCM-F001491_seg001", "TPHMARCM-242F_seg1", "TPHMARCM-811F_seg1")
+p1s=dps[union(p1df$item,missing.p1s)]
+```
+
+Let's check the sex and driver line for these neurons. 
+```{r p1s by driver, cache=TRUE}
+with(p1s,table(Driver,Gender))
+```
+
+So male fru-Gal4 neurons are the clear majority but, there is a significant number of
+non-fru and female neurons. Let's cluster by morphology, also labelling the neurons by
+driver and showing the sex by the colour of the labels.
+
+```{r cluster with driver, dev='pdf', message=FALSE, cache=TRUE, fig.width=181.415/25.4, fig.height=78.556/25.4}
+hcp1s=hclustfc(names(p1s), unsquare = T)
+dendp1s=color_clusters(hcp1s,k=2)
+dendp1s=set_leaf_colours(dendp1s, col_to_set = 'label',
+  col=with(p1s,structure(c(M='cyan',F='magenta')[Gender],.Names=gene_name)))
+labels(dendp1s)=subset(p1s, subset = labels(dendp1s), rval='data.frame')$Driver
+par(mar=c(4,2,0,0), cex=.6)
+plot(dendp1s)
+```
+So there is a large group in which male fru neurons are the majority.
+
+Plotting the neurons coloured by drivers emphasised that the main group are 
+fru-Gal4 positive.
+
+```{r plot-by-driver, rgl=TRUE, cache=TRUE}
+clear3d()
+par3d(op)
+par3d(zoom=0.7)
+plot3d(p1s, col=factor(Driver), soma=T)
+```
+
+Looking at the clustering more closely, there are several odd ones out amongst 
+the male fru-Gal4 neurons. We went back and checked the sex using the Dlg neuropil staining. 
+Four of them turned out to be incorrect, while another six turn out to be bona
+fide female neurons that appear related to but distinct from the subgroup of 
+male P1 neurons. Two of the female neurons are labelled by fru-Gal4, and all of
+this subgroup have identical primary neurites, so it seems rather likely that 
+they are lineage related neurons that are not killed by the action of dsx
+(see Kimura et al 2008).
+```{r fix sex, cache=TRUE}
+reallymale=c("FruMARCM-F000310_seg001","FruMARCM-F001393_seg001",
+             "FruMARCM-F002616_seg001","FruMARCM-F001491_seg001")
+reallyfemale=c("FruMARCM-F000626_seg001","ChaMARCM-F000757_seg001",
+               "TPHMARCM-882F_seg1","TPHMARCM-827F_seg2", 
+               "FruMARCM-F001932_seg001", "TPHMARCM-811F_seg1")
+# fix sex in attached data.frame
+attr(p1s,'df')[reallymale,'Gender']="M"
+```
+
+In any case, group 2 are the classic P1s. Let's cut those at h=1 to see how many
+types that predicts:
+
+```{r cluster P1 selection, warning=FALSE, message=FALSE, fig.width=181.415/25.4, fig.height=78.556/25.4, dpi=300, cache=TRUE}
+p1s.sel=p1s[subset(hcp1s,k=2,group=2)]
+hcp1s.g2=hclustfc(names(p1s.sel), unsquare = T)
+dendp1s.g2=color_clusters(hcp1s.g2,h=1, groupLabels=as.integer)
+dendp1s.g2=set_leaf_colours(dendp1s.g2, col_to_set = 'label',
+  col=with(p1s[labels(dendp1s.g2)],structure(c(M='cyan',F='magenta')[Gender],.Names=gene_name)))
+labels(dendp1s.g2)=subset(p1s, subset = labels(dendp1s.g2), rval='data.frame')$Driver
+par(mar=c(4,2,0,0), cex=0.5)
+plot(dendp1s.g2)
+abline(h=height_for_ngroups(hc=hcp1s.g2, k=10), lty='dashed')
+```
+
+i.e. there are `r max(slice(hcp1s.g2,h=1))` groups when h=0.92 (dashed line) and 
+`r max(slice(hcp1s.g2,h=0.75))` groups when h=0.75 (dotted line).
+
+Plot all groups.
+```{r hcp1s.g2.all, rgl=T}
+clear3d()
+plot3d(FCWB,alpha=0)
+plot3d(hcp1s.g2, h=1, soma = T)
+op=structure(list(FOV = 0, userMatrix = structure(c(1, 0, 0, 0, 
+0, -1, 0, 0, 0, 0, -1, 0, -14.7076296339779, -46.2984371382541, 
+0, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.290864706039429), .Names = c("FOV", 
+"userMatrix", "scale", "zoom"))
+par3d(op)
+```
+
+Plot each group in turn.
+
+Group 1.
+
+```{r hcp1s.g2.1, rgl=T}
+npop3d()
+plot3d(hcp1s.g2, h=1, groups=1, soma = T)
+par3d(op)
+```
+
+Group 2.
+
+```{r hcp1s.g2.2, rgl=T}
+npop3d()
+plot3d(hcp1s.g2, h=1, groups=2, soma = T)
+par3d(op)
+```
+
+Group 3.
+
+```{r hcp1s.g2.3, rgl=T}
+npop3d()
+plot3d(hcp1s.g2, h=1, groups=3, soma = T)
+par3d(op)
+```
+
+Group 4.
+
+```{r hcp1s.g2.4, rgl=T}
+npop3d()
+plot3d(hcp1s.g2, h=1, groups=4, soma = T)
+par3d(op)
+```
+
+Group 5.
+
+```{r hcp1s.g2.5, rgl=T}
+npop3d()
+plot3d(hcp1s.g2, h=1, groups=5, soma = T)
+par3d(op)
+```
+
+Group 6.
+
+```{r hcp1s.g2.6, rgl=T}
+npop3d()
+plot3d(hcp1s.g2, h=1, groups=6, soma = T)
+par3d(op)
+```
+
+Group 7.
+
+```{r hcp1s.g2.7, rgl=T}
+npop3d()
+plot3d(hcp1s.g2, h=1, groups=7, soma = T)
+par3d(op)
+```
+
+Group 8.
+
+```{r hcp1s.g2.8, rgl=T}
+npop3d()
+plot3d(hcp1s.g2, h=1, groups=8, soma = T)
+par3d(op)
+```
+
+Group 9.
+
+```{r hcp1s.g2.9, rgl=T}
+npop3d()
+plot3d(hcp1s.g2, h=1, groups=9, soma = T)
+plot3d(MER,col='grey',alpha=0.3)
+par3d(op)
+```
+
+Group 10.
+
+```{r hcp1s.g2.10, rgl=T}
+npop3d()
+plot3d(hcp1s.g2, h=1, groups=10, soma = T)
+plot3d(MER,col='grey',alpha=0.3)
+par3d(op)
+```
+
+Plot 9 and 10, male and female respectively.
+```{r hcp1s.g2.1011, rgl=T, cache=TRUE}
+clear3d()
+op2=structure(list(FOV = 0, userMatrix = structure(c(1, 0, 0, 0, 
+0, -1, 0, 0, 0, 0, -1, 0, -3.52978142126604, -10.280928396998, 
+0, 1), .Dim = c(4L, 4L)), scale = c(1, 1, 1), zoom = 0.634920716285706), .Names = c("FOV", 
+"userMatrix", "scale", "zoom"))
+par3d(op2)
+plot3d(subset(hcp1s.g2, h=1, groups=9),col='cyan', soma = T)
+plot3d(subset(hcp1s.g2, h=1, groups=10),col='magenta', soma = T)
+```
+
+We can also compare with affinity propagation clustering. We use a p value of 
+0.5, since this increases the number of classes, taking us closer to the cut
+thresholds we are using in the hierarchical clustering. A similarity score of 0.5 is a
+reasonable estimate for a type from the PN clustering data.
+```{r p1 classes, cache=TRUE}
+apresp1s=apclusterfc(names(p1s.sel), p=0.5)
+p1ex=names(apresp1s@exemplars)
+```
+
+so this gives `r length(p1ex)` exemplars. 
+
+Have we missed any P1 neurons? Our approach involved a manual sifting step after
+affinity propagation. We can try searching with the exemplar neurons from the
+affinity propagation to see if there are any good hits left in the database:
+```{r missing P1s, rgl=T, cache=TRUE}
+p1exsc=fc_nblast(p1ex,normalisation='mean')
+recheck=names(which(apply(p1exsc,1,function(x) any(x>0.4))))
+# plot the ones that we have not already inspected
+clear3d()
+plot3d(setdiff(recheck,names(p1s)), soma=T)
+# after plotting them, picked up these 6 neurons with P1 type primary neurites
+missing.p1s=c("FruMARCM-M002554_seg001", "FruMARCM-M000150_seg004", "FruMARCM-F001932_seg001", 
+"FruMARCM-F001491_seg001", "TPHMARCM-242F_seg1", "TPHMARCM-811F_seg1")
+nonp1=setdiff(recheck, union(missing.p1s,names(p1s.sel)))
+```
+
+Interestingly, there is a second large group of neurons in there that have very
+similar arborisation patterns to the P1s. Let's cluster and pull them out:
+
+```{r nonp1, cache=TRUE, fig.width=181.415/25.4, fig.height=78.556/25.4}
+hcnonp1=hclustfc(nonp1, unsquare = T)
+dnonp1=color_clusters(hcnonp1,k=2)
+labels(dnonp1)=NULL
+par(mar=c(0,2,0,0))
+plot(dnonp1)
+# dendp1s.g2=set_leaf_colours(dendp1s.g2, col_to_set = 'label',
+#   col=with(p1s[labels(dendp1s.g2)],structure(c(M='cyan',F='magenta')[Gender],.Names=gene_name)))
+# labels(dendp1s.g2)=subset(p1s, subset = labels(dendp1s.g2), rval='data.frame')$Driver
+# plot(dendp1s.g2)
+```
+Plot group 2.
+```{r nonp1_rgl, cache=TRUE}
+clear3d()
+par3d(op)
+plot3d(hcnonp1,k=2, group=2, soma=T)
+```
