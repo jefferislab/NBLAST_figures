@@ -114,9 +114,15 @@ Nearest neighbour interpolation
 
 Get numbers for nearest neighbour interpolation.
 
+Use a remote score matrix restricted to olfactory projection neurons:
+```{r remote-score-matrix}
+pnscoremat <- load_si_data("pnscoremat.rds")
+options(flycircuit.scoremat="pnscoremat")
+```
+
 Subset glomdf to include only upnswehave and neurons in classes with more than 3 neurons).
 ```{r nearest_neighbour, cache=TRUE}
-load(file="/GD/LMBD/Papers/2012NBlast/R/tractglomdf.rda")
+tractglomdf=load_si_data("tractglomdf.rds")
 upnsnotdl2=subset(upnstophits_norm, query.class!="DL2v" & query.class!="DL2d")
 upnswehave=as.character(upnsnotdl2$query)
 length(upnswehave)
