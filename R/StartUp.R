@@ -11,7 +11,11 @@ if(!identical(try(packageVersion('flycircuit')>=package_version('0.5.3'), silent
     options(repos="http://cran.rstudio.com")
 
   # install standard packages
-  install.packages(c('doMC', 'dendroextras', 'rgl', 'ggplot2', 'spam', 'knitr', 'apcluster', 'mixOmics', 'Heatplus'))
+  install.packages(c('doMC', 'dendroextras', 'rgl', 'ggplot2', 'spam', 'knitr', 'apcluster', 'mixOmics'))
+
+  # from bioconductor
+  source("http://bioconductor.org/biocLite.R")
+  biocLite("Heatplus")
 
   if(!require(devtools)) install.packages('devtools')
   devtools::install_github("jefferis/nat")
