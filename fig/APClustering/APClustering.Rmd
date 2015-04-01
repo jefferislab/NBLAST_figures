@@ -91,12 +91,13 @@ plot3d(subset(exemhc, k=3, groups=3), soma=T, col="blue")
 
 Central brain neurons are in groups 2 and 3.
 
-From central brain group, there only a few exemplars in OL that still need to be removed.
+From the central brain group, there only a few exemplars in OL that still need to be removed (details in DivideVPNsCentralBrain.R): olextra neurons
 ```{r removing_central_brain_strays, custom.plot=TRUE, cache=TRUE}
 clear3d()
 plot3d(FCWB)
 par3d(op)
 plot3d(olextra, soma=T)
+olextra
 ```
 
 The central brain exemplars that will be used from here on. 
