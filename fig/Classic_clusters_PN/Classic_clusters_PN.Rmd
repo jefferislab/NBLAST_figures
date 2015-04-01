@@ -12,7 +12,7 @@ source("../../R/StartUp.R", chdir = TRUE)
 library(Heatplus) # for picketPlot
 
 opts_chunk$set(message=FALSE,fig.height=30.339/25.4, fig.width=50.734/25.4, dev='png',dpi=300, fig.path="figure/")
-knit_hooks$set(custom.plot = hook_rgl2) #Needed to embed plots
+knit_hooks$set(custom.plot = hook_rgl) #Needed to embed plots
 par3dmini=c("FOV", "userMatrix", "scale", "zoom")
 ```
 
