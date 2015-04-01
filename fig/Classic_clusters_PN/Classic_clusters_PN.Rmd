@@ -177,7 +177,7 @@ picketPlot(picketplotdfshort[labels(pnhc_h),],grp=slice(pnhc_hd,h=height_for_ngr
 ```
 
 Plot all upns used in the dendrogram coloured by dendrogram group.
-```{r Plot3d_uPNNotDl2, custom.plot=TRUE, cache=TRUE}
+```{r Plot3d_uPNNotDl2, custom.plot=TRUE, cache=TRUE, rgl.wait=1}
 nopen3d()
 op=structure(list(FOV = 0, userMatrix = structure(c(1, 0, 0, 0, 
 0, -1, 0, 0, 0, 0, -1, 0, 1.29680967820684, 2.26185450224706, 
