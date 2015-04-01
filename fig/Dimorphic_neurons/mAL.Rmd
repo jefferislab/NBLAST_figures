@@ -99,7 +99,7 @@ plot3d(hcmal, k=2, groups=2, col="cyan", soma=TRUE)
 So we can see the main morphological features, that have been reported as dimorphic.
 
 * ipsilateral dendritic branch around the oesophagus in males
-* more lateral and triagular contraleral dendritic branch in females
+* more lateral and triangular contralateral dendritic branch in females
 * distinctive ring-shaped axon terminals in terminals vs broader axon arbours in males
 
 Going back to the clustering again, it seems that the male neurons are likely divided into two clusters,
@@ -123,11 +123,11 @@ plot3d(hcmal.m, k=2, soma=TRUE, col=c("red", "blue"))
 ```
 
 So it's very clear, amongst the male neurons, there are at least two subclasses, ones with an ipsilateral dendritic innervation and ones without. Intriguingly, when you look at the axon terminal fields, you can see that there is a 
-strong topographic correlation. Group 1 neurons that have an ispilateral process (red) have more ventro-medial-anterior axon arbours while group 2 neurons (cyan) have more dorso-lateral-posterior arbours. Naturally this will have an influence on their potential synaptic partners.
+strong topographic correlation. Group 1 neurons that have an ipsilateral process (red) have more ventro-medial-anterior axon arbours while group 2 neurons (cyan) have more dorso-lateral-posterior arbours. Naturally this will have an influence on their potential synaptic partners.
 
 ### Subsetting the male neurons using only the terminal arbors
 
-Plot two male mAL neurons and use those to select the regions excluding the terminal arbors.
+Plot two male mAL neurons and use those to select the regions excluding the terminal arbours.
 
 We manually used prune to remove the selected3d space from the neurons, i.e., keep only the terminal arbours. 
 Then cleaned it up to remove extra segments. This is what we did, but for now we
@@ -180,7 +180,7 @@ par3d(op)
 plot3d(pruned2.hc,k=3, soma=T)
 ```
 
-Group 1 only has contralateral dendrites, group 2 has a short ipsilateral arbor, and group 3 has both a ipsi- and contralateral arbors.
+Group 1 only has contralateral dendrites, group 2 has a short ipsilateral arbour, and group 3 has both a ipsi- and contralateral arbours.
 ```{r hcmal-M.prune.hc_g1,cache=TRUE, rgl=TRUE}
 clear3d()
 par3d(op)
@@ -210,7 +210,7 @@ plot3d(pruned2.hc,k=3, groups=2:3, soma=T)
 
 Diving group 1 to look for subtypes: there are 2 clear ones. 
 
-One with long terminal arbors on the dorsal contralateral side (more anterior).
+One with long terminal arbours on the dorsal contralateral side (more anterior).
 
 ```{r hcmal-M.prune.hc_subtypes-1, cache=TRUE, rgl=TRUE}
 clear3d()
