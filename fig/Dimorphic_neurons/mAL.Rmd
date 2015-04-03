@@ -149,12 +149,14 @@ s3=select3d()
 pruned2=nlapply(pruned,subset,Negate(s1))
 pruned2=nlapply(pruned2,subset,Negate(s2))
 pruned2=nlapply(pruned2,subset,Negate(s3))
-saveRDS(pruned2, file="/GD/LMBD/Papers/2012NBlast/R/pruned2.rds")
+save(pruned2, file="/GD/LMBD/Papers/2012NBlast/R/pruned2.rda")
+# or to make a remote cache:
+flycircuit:::upload_si_data("pruned2")
 ```
 
 Plot the selected neurites.
 ```{r hcmal-M.prune, cache=TRUE, rgl=TRUE}
-pruned2=load_si_data("/GD/LMBD/Papers/2012NBlast/R/pruned2.rds")
+pruned2=load_si_data("pruned2.rds")
 par3d(op)
 plot3d(pruned2, col='black')
 plot3d(labels(hcmal.m), col='lightgrey')
