@@ -35,7 +35,7 @@ Plot of single P1 neuron, showing the male enlarged regions (MER).
 
 First let's plot the MER defined by Cachero, Ostrovsky et al 2010.
 
-```{r MER, rgl=T, cache=TRUE}
+```{r MER, rgl=T, cache=TRUE, rgl.wait=1}
 MER=read.hxsurf("tvalsIS2-ascii.surf", RegionChoice = 'Outer')
 MER=xform_brain(MER, ref=FCWB, sample=IS2)
 op=structure(list(FOV = 0, userMatrix = structure(c(1, 0, 0, 0, 
@@ -161,7 +161,7 @@ i.e. there are `r max(slice(hcp1s.g2,h=1))` groups when h=0.92 (dashed line) and
 `r max(slice(hcp1s.g2,h=0.75))` groups when h=0.75 (dotted line).
 
 Plot all groups.
-```{r hcp1s.g2.all, rgl=T}
+```{r hcp1s.g2.all, rgl=T, rgl.wait=1}
 clear3d()
 plot3d(FCWB,alpha=0)
 plot3d(hcp1s.g2, h=1, soma = T)
