@@ -17,10 +17,9 @@ Some scripts depend on an installation of the image registration toolkit CMTK in
 1. Install R from http://www.r-project.org/ (you need at least R 3.2.0, latest R recommended).
 2. Install RStudio from http://www.rstudio.com.
 3. Optionally on MacOS X install XQuartz to use X11 for 3D visualisation (this used to be packaged with MacOS X but is now available only from http://xquartz.macosforge.org/)
-4. Optionally install CMTK from http://www.nitrc.org/projects/cmtk 
-  (used to transform some neurons between template brains). A full set of binaries is available here:
-  http://www.nitrc.org/frs/?group_id=212. We recommend the lastest version of CMTK and certainly CMTK>=3.2.2
-  the latest dmg.
+4. CMTK from http://www.nitrc.org/projects/cmtk is necesary for some scripts.
+  (it is used to transform neurons between template brains). A full set of binaries is available here:
+  http://www.nitrc.org/frs/?group_id=212. We recommend the lastest version of CMTK and certainly CMTK>=3.2.2.
 
 ## Setting Up
 
